@@ -1,0 +1,65 @@
+
+const express = require("express");
+const app = express();
+app.use(express.json());
+const cors = require("cors");
+app.use(cors());
+const http = require("http");
+const { Server } = require("socket.io");
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST", "PATCH", "DELETE", "PUT"],
+  },
+});
+const connectDB = require("./src/configs/mongoose");
+const auth = require("./src/middleware/auth");
+const userRouter = require("./src/routes/userRouter");
+const menuRouter = require("./src/routes/menuRouter");
+const orderRouter = require("./src/routes/orderRouter");
+const cartRouter = require("./src/routes/cartRouter");
+const ratingRouter = require("./src/routes/ratingRouter");
+const port = process.env.PORT || 3000;
+const url =
+  "mongodb+srv://rakshitbargotra:rakshitbargotra@cluster0.n1m4mu0.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+app.use("/user", userRouter);
+app.use(
+  "/menu",
+  auth,
+  (req, res, next) => {
+    req.io = io;
+    next();
+  },
+  menuRouter
+);
+app.use("/order", auth, (req, res, next) => {
+    req.io = io;
+    next();
+  }, orderRouter);
+app.use(
+  "/cart",
+  auth,
+  (req, res, next) => {
+    req.io = io;
+    next();
+  },
+  cartRouter
+);
+app.use(
+  "/rating",
+  auth,
+  (req, res, next) => {
+    req.io = io;
+    next();
+  },
+  ratingRouter
+);
+server.listen(port, async () => {
+  try {
+    await connectDB(url);
+    console.log(`server is running on http://localhost:${port}`);
+  } catch (err) {
+    console.log(err);
+  }
+});
