@@ -13,7 +13,7 @@ const io = new Server(server, {
     methods: ["GET", "POST", "PATCH", "DELETE", "PUT"],
   },
 });
-const connectDB = require("./src/configs/mongoose");
+const connectDB = require("./mongoose");
 const auth = require("./src/middleware/auth");
 const userRouter = require("./src/routes/userRouter");
 const menuRouter = require("./src/routes/menuRouter");
