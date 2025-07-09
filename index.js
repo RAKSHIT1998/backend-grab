@@ -1,10 +1,13 @@
 require("dotenv").config(); // Load .env file
+require("dotenv").config();
 
 const express = require("express");
 const cors = require("cors");
 const http = require("http");
 const { Server } = require("socket.io");
 const connectDB = require("./mongoose");
+const mongoURI = process.env.MONGODB_URI;
+const PORT = process.env.PORT || 3000;
 
 const auth = require("./src/middleware/auth");
 const userRouter = require("./src/routes/userRouter");
@@ -12,6 +15,7 @@ const menuRouter = require("./src/routes/menuRouter");
 const orderRouter = require("./src/routes/orderRouter");
 const cartRouter = require("./src/routes/cartRouter");
 const ratingRouter = require("./src/routes/ratingRouter");
+
 
 const app = express();
 app.use(express.json());
