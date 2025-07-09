@@ -1,21 +1,13 @@
 const express = require("express");
-const cors = require("cors");
-const http = require("http");
-const { Server } = require("socket.io");
-const connectDB = require("./mongoose");
-
-const auth = require("./src/middleware/auth");
-const userRouter = require("./src/routes/userRouter");
-const menuRouter = require("./src/routes/menuRouter");
-const orderRouter = require("./src/routes/orderRouter");
-const cartRouter = require("./src/routes/cartRouter");
-const ratingRouter = require("./src/routes/ratingRouter");
-
 const app = express();
 app.use(express.json());
+const cors = require("cors");
 app.use(cors());
 
+const http = require("http");
+const { Server } = require("socket.io");
 const server = http.createServer(app);
+
 const io = new Server(server, {
   cors: {
     origin: "*",
@@ -23,33 +15,65 @@ const io = new Server(server, {
   },
 });
 
-// Attach io to requests
-const withIO = (router) => [
+const connectDB = require("./mongoose");
+const auth = require("./src/middleware/auth");
+
+const userRouter = require("./src/routes/userRouter");
+const menuRouter = require("./src/routes/menuRouter");
+const orderRouter = require("./src/routes/orderRouter");
+const cartRouter = require("./src/routes/cartRouter");
+const ratingRouter = require("./src/routes/ratingRouter");
+
+const PORT = process.env.PORT || 3000;
+
+// ✅ Make sure this name matches below
+const mongoURI =
+  "mongodb+srv://rakshitbargotra%40gmail.com:Rakshit%409858@cluster0.abcd.mongodb.net/<dbname>?retryWrites=true&w=majority";
+
+// ROUTES
+app.use("/user", userRouter);
+app.use(
+  "/menu",
   auth,
   (req, res, next) => {
     req.io = io;
     next();
   },
-  router,
-];
+  menuRouter
+);
+app.use(
+  "/order",
+  auth,
+  (req, res, next) => {
+    req.io = io;
+    next();
+  },
+  orderRouter
+);
+app.use(
+  "/cart",
+  auth,
+  (req, res, next) => {
+    req.io = io;
+    next();
+  },
+  cartRouter
+);
+app.use(
+  "/rating",
+  auth,
+  (req, res, next) => {
+    req.io = io;
+    next();
+  },
+  ratingRouter
+);
 
-// MongoDB connection string (without port number in URI)
-// const mongoURI = "mongodb+srv://rakshitbargotra%40gmail.com:Rakshit%409858@cluster0.abcd.mongodb.net/<dbname>?retryWrites=true&w=majority";
-
-// Routes
-app.use("/user", userRouter);
-app.use("/menu", ...withIO(menuRouter));
-app.use("/order", ...withIO(orderRouter));
-app.use("/cart", ...withIO(cartRouter));
-app.use("/rating", ...withIO(ratingRouter));
-
-// Use Render-assigned port
-const PORT = process.env.PORT || 3000;
-
+// START SERVER
 server.listen(PORT, async () => {
   try {
     await connectDB(mongoURI);
-    console.log(`✅ Server listening on port ${PORT}`);
+    console.log(`✅ Server is running on http://localhost:${PORT}`);
   } catch (err) {
     console.error("❌ MongoDB connection failed:", err);
   }
