@@ -20,7 +20,7 @@ const menuRouter = require("./src/routes/menuRouter");
 const orderRouter = require("./src/routes/orderRouter");
 const cartRouter = require("./src/routes/cartRouter");
 const ratingRouter = require("./src/routes/ratingRouter");
-const port = process.env.PORT || 3000;
+const port = process.env.PORT;
 const url =
   "mongodb+srv://rakshitbargotra@gmail.com:Rakshit@9858@cluster0.abcd.mongodb.net/<dbname>?retryWrites=true&w=majority";
 app.use("/user", userRouter);
