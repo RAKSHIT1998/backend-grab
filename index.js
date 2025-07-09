@@ -22,7 +22,7 @@ const cartRouter = require("./src/routes/cartRouter");
 const ratingRouter = require("./src/routes/ratingRouter");
 const port = process.env.PORT || 3000;
 const url =
-  "mongodb+srv://rakshitbargotra:rakshitbargotra@cluster0.n1m4mu0.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+  "mongodb+srv://rakshitbargotra@gmail.com:Rakshit@9858@cluster0.n1m4mu0.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
 app.use("/user", userRouter);
 app.use(
   "/menu",

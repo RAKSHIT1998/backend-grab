@@ -3,13 +3,12 @@ const mongoose = require("mongoose");
 const connectDB = async (url) => {
   try {
     await mongoose.connect(url, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
+      // No need for `useNewUrlParser` or `useUnifiedTopology`
     });
-    console.log("MongoDB connected");
-  } catch (error) {
-    console.error("MongoDB connection error:", error);
-    process.exit(1);
+    console.log("Connected to MongoDB Atlas");
+  } catch (err) {
+    console.error("MongoDB connection error:", err);
+    throw err;
   }
 };
 
