@@ -6,8 +6,6 @@ const cors = require("cors");
 const http = require("http");
 const { Server } = require("socket.io");
 const connectDB = require("./mongoose");
-const mongoURI = process.env.MONGODB_URI;
-const PORT = process.env.PORT || 3000;
 
 const auth = require("./src/middleware/auth");
 const userRouter = require("./src/routes/userRouter");
@@ -41,8 +39,8 @@ const withIO = (router) => [
 ];
 
 // ENV CONFIG
+const mongoURI = process.env.MONGODB_URI;
 const PORT = process.env.PORT || 3000;
-const mongoURI = process.env.MONGO_URI;
 
 // ROUTES
 app.use("/user", userRouter);
