@@ -24,7 +24,7 @@ const orderRouter = require("./src/routes/orderRouter");
 const cartRouter = require("./src/routes/cartRouter");
 const ratingRouter = require("./src/routes/ratingRouter");
 
-const PORT = process.env.PORT || ;
+const PORT = process.env.PORT || 3000;
 
 // ✅ Make sure this name matches below
 const mongoURI =
