@@ -28,7 +28,7 @@ const PORT = process.env.PORT || 3000;
 
 // ✅ Make sure this name matches below
 const mongoURI =
-  "mongodb+srv://rakshitbargotra%40gmail.com:Rakshit%409858@cluster0.abcd.mongodb.net/<dbname>?retryWrites=true&w=majority";
+  "mongodb+srv://rakshitbargotra@gmail.com:Rakshit@9858@cluster0.n1m4mu0.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
 
 // ROUTES
 app.use("/user", userRouter);
