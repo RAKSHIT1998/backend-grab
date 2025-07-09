@@ -1,13 +1,24 @@
-const express = require("express");
-const app = express();
-app.use(express.json());
-const cors = require("cors");
-app.use(cors());
+require("dotenv").config(); // Load .env file
 
+const express = require("express");
+const cors = require("cors");
 const http = require("http");
 const { Server } = require("socket.io");
-const server = http.createServer(app);
+const connectDB = require("./mongoose");
 
+const auth = require("./src/middleware/auth");
+const userRouter = require("./src/routes/userRouter");
+const menuRouter = require("./src/routes/menuRouter");
+const orderRouter = require("./src/routes/orderRouter");
+const cartRouter = require("./src/routes/cartRouter");
+const ratingRouter = require("./src/routes/ratingRouter");
+
+const app = express();
+app.use(express.json());
+app.use(cors());
+
+// SOCKET SERVER
+const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
     origin: "*",
@@ -15,65 +26,32 @@ const io = new Server(server, {
   },
 });
 
-const connectDB = require("./mongoose");
-const auth = require("./src/middleware/auth");
+// Attach io to requests
+const withIO = (router) => [
+  auth,
+  (req, res, next) => {
+    req.io = io;
+    next();
+  },
+  router,
+];
 
-const userRouter = require("./src/routes/userRouter");
-const menuRouter = require("./src/routes/menuRouter");
-const orderRouter = require("./src/routes/orderRouter");
-const cartRouter = require("./src/routes/cartRouter");
-const ratingRouter = require("./src/routes/ratingRouter");
-
+// ENV CONFIG
 const PORT = process.env.PORT || 3000;
-
-// ✅ Make sure this name matches below
-const mongoURI =
-  "mongodb+srv://rakshitbargotra@gmail.com:Rakshit@9858@cluster0.n1m4mu0.mongodb.net/?retryWrites=true&w=majority";
+const mongoURI = process.env.MONGO_URI;
 
 // ROUTES
 app.use("/user", userRouter);
-app.use(
-  "/menu",
-  auth,
-  (req, res, next) => {
-    req.io = io;
-    next();
-  },
-  menuRouter
-);
-app.use(
-  "/order",
-  auth,
-  (req, res, next) => {
-    req.io = io;
-    next();
-  },
-  orderRouter
-);
-app.use(
-  "/cart",
-  auth,
-  (req, res, next) => {
-    req.io = io;
-    next();
-  },
-  cartRouter
-);
-app.use(
-  "/rating",
-  auth,
-  (req, res, next) => {
-    req.io = io;
-    next();
-  },
-  ratingRouter
-);
+app.use("/menu", ...withIO(menuRouter));
+app.use("/order", ...withIO(orderRouter));
+app.use("/cart", ...withIO(cartRouter));
+app.use("/rating", ...withIO(ratingRouter));
 
 // START SERVER
 server.listen(PORT, async () => {
   try {
     await connectDB(mongoURI);
-    console.log(`✅ Server is running on http://localhost:${PORT}`);
+    console.log(`✅ Server running at http://localhost:${PORT}`);
   } catch (err) {
     console.error("❌ MongoDB connection failed:", err);
   }
