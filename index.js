@@ -34,7 +34,7 @@ const withIO = (router) => [
 ];
 
 // MongoDB connection string (without port number in URI)
-const mongoURI = "mongodb+srv://rakshitbargotra@gmail.com:Rakshit@985822@cluster0.mongodb.net/<dbname>?retryWrites=true&w=majority";
+// const mongoURI = "mongodb+srv://rakshitbargotra%40gmail.com:Rakshit%409858@cluster0.abcd.mongodb.net/<dbname>?retryWrites=true&w=majority";
 
 // Routes
 app.use("/user", userRouter);
