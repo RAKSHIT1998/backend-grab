@@ -37,8 +37,13 @@ app.use('/api/reviews', require('./routes/reviews'));
 app.use('/api/payments', require('./routes/payments'));
 app.use('/api/admin', require('./routes/admin'));
 
-// Auto-detect port (Render sets PORT)
-const PORT = process.env.PORT || 5000;
+// Auto-detect port (no hardcoded port)
+const PORT = process.env.PORT;
+if (!PORT) {
+  console.error('❌ PORT not defined in environment');
+  process.exit(1);
+}
+
 app.listen(PORT, () => {
   console.log(`🚀 API running on port ${PORT}`);
 });
