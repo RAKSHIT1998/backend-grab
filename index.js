@@ -1,4 +1,4 @@
-require("dotenv").config(); // Load .env file
+require("dotenv").config(); // Load .env first
 
 const express = require("express");
 const cors = require("cors");
@@ -13,12 +13,11 @@ const orderRouter = require("./src/routes/orderRouter");
 const cartRouter = require("./src/routes/cartRouter");
 const ratingRouter = require("./src/routes/ratingRouter");
 
-
 const app = express();
 app.use(express.json());
 app.use(cors());
 
-// SOCKET SERVER
+// HTTP + Socket.IO server
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
@@ -37,22 +36,22 @@ const withIO = (router) => [
   router,
 ];
 
-// ENV CONFIG
-const mongoURI = process.env.MONGODB_URI;
-const PORT = process.env.PORT || 3000;
-
-// ROUTES
+// Routes
 app.use("/user", userRouter);
 app.use("/menu", ...withIO(menuRouter));
 app.use("/order", ...withIO(orderRouter));
 app.use("/cart", ...withIO(cartRouter));
 app.use("/rating", ...withIO(ratingRouter));
 
-// START SERVER
+// Port + MongoDB URI from .env
+const PORT = process.env.PORT || 3000;
+const MONGO_URI = process.env.MONGO_URI;
+
+// Start server
 server.listen(PORT, async () => {
   try {
-    await connectDB(mongoURI);
-    console.log(`✅ Server running at http://localhost:${PORT}`);
+    await connectDB(MONGO_URI);
+    console.log(`✅ Server is running at http://localhost:${PORT}`);
   } catch (err) {
     console.error("❌ MongoDB connection failed:", err);
   }
