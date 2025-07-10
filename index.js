@@ -1,3 +1,4 @@
+require('dotenv').config(); // Add this at the very top
 const express = require("express");
 const app = express();
 app.use(express.json());
@@ -8,7 +9,7 @@ const { Server } = require("socket.io");
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "*",
+    origin: process.env.SOCKET_ORIGIN || "*",
     methods: ["GET", "POST", "PATCH", "DELETE", "PUT"],
   },
 });
@@ -19,9 +20,10 @@ const menuRouter = require("./src/routes/menuRouter");
 const orderRouter = require("./src/routes/orderRouter");
 const cartRouter = require("./src/routes/cartRouter");
 const ratingRouter = require("./src/routes/ratingRouter");
+
 const port = process.env.PORT || 3000;
-const url =
-  "mongodb+srv://rakshitbargotra@gmail.com:AdminRakshit@cluster0.qebwod4.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+
+// Routes
 app.use("/user", userRouter);
 app.use(
   "/menu",
@@ -32,10 +34,15 @@ app.use(
   },
   menuRouter
 );
-app.use("/order", auth, (req, res, next) => {
+app.use(
+  "/order", 
+  auth, 
+  (req, res, next) => {
     req.io = io;
     next();
-  }, orderRouter);
+  }, 
+  orderRouter
+);
 app.use(
   "/cart",
   auth,
@@ -54,11 +61,31 @@ app.use(
   },
   ratingRouter
 );
+
+// Server startup
 server.listen(port, async () => {
   try {
-    await connectDB(url);
-    console.log(`server is running on http://localhost:${port}`);
+    await connectDB(process.env.MONGODB_URI);
+    console.log(`Server is running on http://localhost:${port}`);
+    console.log(`Environment: ${process.env.NODE_ENV}`);
+    console.log("MongoDB connected successfully");
   } catch (err) {
-    console.log(err);
+    console.error("Server startup error:", err);
+    process.exit(1);
   }
+});
+
+// Socket.io connection handler
+io.on("connection", (socket) => {
+  console.log("A user connected:", socket.id);
+  
+  socket.on("disconnect", () => {
+    console.log("User disconnected:", socket.id);
+  });
+});
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).send('Something broke!');
 });
