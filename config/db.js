@@ -4,20 +4,19 @@ require('dotenv').config();
 
 const connectDB = async () => {
   try {
-    // 1. Get and validate the connection string
+    // 1. Get and validate URI
     let uri = process.env.MONGODB_URI;
     if (!uri) throw new Error('MONGODB_URI is missing in .env');
 
-    // 2. Clean the URI (critical fix)
-    if (uri.includes('+srv')) {
-      uri = uri
-        .replace(/:(\d+)/, '') // Remove port numbers
-        .replace(/(\.mongodb\.net)(\?|$)/, '$1/$2'); // Ensure proper format
-    }
+    // 2. Force clean the URI (absolute guarantee)
+    uri = uri
+      .replace(/\s/g, '') // Remove all whitespace
+      .replace(/:(\d+)\//, '/') // Remove port numbers
+      .replace(/(mongodb\+srv:\/\/[^/]+)\/?/, '$1/'); // Ensure proper format
 
-    // 3. Modern connection options (no deprecated settings)
+    // 3. Modern connection options
     const options = {
-      serverSelectionTimeoutMS: 5000,
+      serverSelectionTimeoutMS: 10000,
       retryWrites: true,
     };
 
@@ -29,21 +28,17 @@ const connectDB = async () => {
   } catch (error) {
     console.error('❌ MongoDB connection failed:', error.message);
     
-    // Specific handling for authentication errors
-    if (error.message.includes('authentication failed')) {
-      console.error('\n🔐 AUTHENTICATION FAILURE:');
-      console.error('1. Verify your username/password in the connection string');
-      console.error('2. Check MongoDB Atlas → Security → Database Access');
-      console.error('3. Ensure your IP is whitelisted in Network Access');
+    // Special handling for URI errors
+    if (error.message.includes('port number')) {
+      console.error('\n🔧 SOLUTION:');
+      console.error('Your connection string:', process.env.MONGODB_URI);
+      console.error('1. Remove ALL port numbers (like :27017)');
+      console.error('2. SRV format must be: mongodb+srv://user:pass@host/db');
+      console.error('3. Check for hidden whitespace or special characters');
     }
     
     process.exit(1);
   }
 };
-
-// Connection event handlers
-mongoose.connection.on('error', err => {
-  console.error('MongoDB runtime error:', err);
-});
 
 module.exports = connectDB;
