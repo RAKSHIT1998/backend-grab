@@ -1,31 +1,43 @@
-const express = require("express");
-const mongoose = require("mongoose");
-const cors = require("cors");
-const dotenv = require("dotenv");
+const express = require('express');
+const mongoose = require('mongoose');
+const cors = require('cors');
+const dotenv = require('dotenv');
 
+// Load environment variables
 dotenv.config();
 
 const app = express();
+
+// Middleware
 app.use(express.json());
 app.use(cors());
-app.use("/uploads", express.static("uploads"));
+app.use('/uploads', express.static('uploads'));
 
-// MongoDB Connection
-const connectDB = require("./mongoose");
-connectDB();
+// MongoDB connection
+const mongoURI = process.env.MONGO_URI;
+if (!mongoURI) {
+  console.error('❌ MONGO_URI not defined in environment');
+  process.exit(1);
+}
+
+mongoose.connect(mongoURI)
+  .then(() => console.log('✅ Connected to MongoDB'))
+  .catch((err) => {
+    console.error('❌ MongoDB connection error:', err);
+    process.exit(1);
+  });
 
 // Routes
-app.use("/api/auth", require("./routes/auth"));
-app.use("/api/restaurants", require("./routes/restaurants"));
-app.use("/api/mart", require("./routes/mart"));
-app.use("/api/rides", require("./routes/rides"));
-app.use("/api/orders", require("./routes/orders"));
-app.use("/api/reviews", require("./routes/reviews"));
-app.use("/api/payments", require("./routes/payments"));
-app.use("/api/admin", require("./routes/admin"));
+app.use('/api/auth', require('./routes/auth'));
+app.use('/api/restaurants', require('./routes/restaurants'));
+app.use('/api/mart', require('./routes/mart'));
+app.use('/api/rides', require('./routes/rides'));
+app.use('/api/orders', require('./routes/orders'));
+app.use('/api/reviews', require('./routes/reviews'));
+app.use('/api/payments', require('./routes/payments'));
+app.use('/api/admin', require('./routes/admin'));
 
-// Auto-detect port (Render sets PORT)
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
+// Use only process.env.PORT (no fallback)
+app.listen(process.env.PORT, () => {
+  console.log(`🚀 API running on port ${process.env.PORT}`);
 });
