@@ -1,24 +1,22 @@
+// server.js
 require('dotenv').config();
 const express = require('express');
-const connectDB = require('./config/db'); // Ensure this path is correct
+const connectDB = require('./config/db'); // Verify path is correct
 
 const app = express();
 const port = process.env.PORT || 8080;
 
-// Initialize server
+// Start server after DB connection
 const startServer = async () => {
   try {
-    await connectDB(); // Connect to database first
-    
+    await connectDB();
     app.listen(port, () => {
       console.log(`🚀 Server running on port ${port}`);
-      console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
     });
-  } catch (error) {
-    console.error('Fatal startup error:', error);
+  } catch (err) {
+    console.error('Fatal startup error:', err);
     process.exit(1);
   }
 };
 
-// Start the application
 startServer();
