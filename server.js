@@ -28,14 +28,14 @@ mongoose.connect(mongoURI)
   });
 
 // Routes
-app.use('/api/auth', require('./routes/auth'));
-app.use('/api/restaurants', require('./routes/restaurants'));
-app.use('/api/mart', require('./routes/mart'));
-app.use('/api/rides', require('./routes/rides'));
-app.use('/api/orders', require('./routes/orders'));
-app.use('/api/reviews', require('./routes/reviews'));
-app.use('/api/payments', require('./routes/payments'));
-app.use('/api/admin', require('./routes/admin'));
+app.use('/api/auth', require('./src/routes/auth'));
+app.use('/api/restaurants', require('./src/routes/restaurants'));
+app.use('/api/mart', require('./src/routes/mart'));
+app.use('/api/rides', require('./src/routes/rides'));
+app.use('/api/orders', require('./src/routes/orders'));
+app.use('/api/reviews', require('./src/routes/reviews'));
+app.use('/api/payments', require('./src/routes/payments'));
+app.use('/api/admin', require('./src/routes/admin'));
 
 // Use only process.env.PORT (no fallback)
 app.listen(process.env.PORT, () => {
