@@ -1,57 +1,29 @@
-require('dotenv').config();
 const mongoose = require('mongoose');
-const logger = require('./logger'); // Optional: if you have a logger utility
+require('dotenv').config();
 
 const connectDB = async () => {
   try {
-    // Validate the connection string format
-    const connectionUri = process.env.MONGODB_URI;
-    if (!connectionUri) {
-      throw new Error('MONGODB_URI is not defined in environment variables');
+    const uri = process.env.MONGODB_URI;
+    
+    // Validate URI format
+    if (!uri) throw new Error('MONGODB_URI is missing in .env');
+    if (uri.includes('+srv') && uri.includes(':')) {
+      throw new Error('Remove port number from mongodb+srv URI');
     }
 
-    if (connectionUri.includes('mongodb+srv') && connectionUri.match(/:\d+/)) {
-      throw new Error('mongodb+srv URI cannot have port number');
-    }
-
-    // Connection options
-    const options = {
+    await mongoose.connect(uri, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
       serverSelectionTimeoutMS: 5000,
-      connectTimeoutMS: 10000,
-    };
-
-    // Establish connection
-    await mongoose.connect(connectionUri, options);
-    console.log('✅ MongoDB connected successfully');
+      connectTimeoutMS: 10000
+    });
     
-    mongoose.connection.on('connected', () => {
-      console.log('Mongoose connected to DB');
-    });
-
-    mongoose.connection.on('error', (err) => {
-      console.error('Mongoose connection error:', err);
-    });
-
-    mongoose.connection.on('disconnected', () => {
-      console.log('Mongoose disconnected from DB');
-    });
-
+    console.log('✅ MongoDB connected successfully');
   } catch (error) {
     console.error('❌ MongoDB connection failed:', error.message);
-    console.error('Connection URI:', process.env.MONGODB_URI ? 
-      process.env.MONGODB_URI.replace(/\/\/[^:]+:[^@]+@/, '//username:****@') : 
-      'Not configured');
+    console.error('Full error:', error);
     process.exit(1);
   }
 };
-
-// Graceful shutdown
-process.on('SIGINT', async () => {
-  await mongoose.connection.close();
-  console.log('Mongoose connection closed due to app termination');
-  process.exit(0);
-});
 
 module.exports = connectDB;
