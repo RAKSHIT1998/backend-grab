@@ -1,5 +1,4 @@
-require("dotenv").config(); // Load .env first
-
+require('dotenv').config();
 const express = require("express");
 const cors = require("cors");
 const http = require("http");
@@ -17,7 +16,6 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-// HTTP + Socket.IO server
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
@@ -26,14 +24,14 @@ const io = new Server(server, {
   },
 });
 
-// Attach io to requests
+// Middleware to attach io instance to requests
 const withIO = (router) => [
   auth,
   (req, res, next) => {
     req.io = io;
     next();
   },
-  router,
+  router
 ];
 
 // Routes
@@ -43,15 +41,20 @@ app.use("/order", ...withIO(orderRouter));
 app.use("/cart", ...withIO(cartRouter));
 app.use("/rating", ...withIO(ratingRouter));
 
-// Port + MongoDB URI from .env
+// Load Mongo URI and Port
+const mongoURI = process.env.MONGO_URI;
 const PORT = process.env.PORT || 3000;
-const MONGO_URI = process.env.MONGO_URI;
+
+if (!mongoURI) {
+  console.error("❌ MONGO_URI not defined in .env");
+  process.exit(1);
+}
 
 // Start server
 server.listen(PORT, async () => {
   try {
-    await connectDB(MONGO_URI);
-    console.log(`✅ Server is running at http://localhost:${PORT}`);
+    await connectDB(mongoURI);
+    console.log(`✅ Server running on http://localhost:${PORT}`);
   } catch (err) {
     console.error("❌ MongoDB connection failed:", err);
   }
