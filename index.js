@@ -1,21 +1,10 @@
-require('dotenv').config();
 const express = require("express");
-const cors = require("cors");
-const http = require("http");
-const { Server } = require("socket.io");
-const connectDB = require("./mongoose");
-
-const auth = require("./src/middleware/auth");
-const userRouter = require("./src/routes/userRouter");
-const menuRouter = require("./src/routes/menuRouter");
-const orderRouter = require("./src/routes/orderRouter");
-const cartRouter = require("./src/routes/cartRouter");
-const ratingRouter = require("./src/routes/ratingRouter");
-
 const app = express();
 app.use(express.json());
+const cors = require("cors");
 app.use(cors());
-
+const http = require("http");
+const { Server } = require("socket.io");
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
@@ -23,39 +12,53 @@ const io = new Server(server, {
     methods: ["GET", "POST", "PATCH", "DELETE", "PUT"],
   },
 });
-
-// Middleware to attach io instance to requests
-const withIO = (router) => [
+const connectDB = require("./src/configs/mongoose");
+const auth = require("./src/middleware/auth");
+const userRouter = require("./src/routes/userRouter");
+const menuRouter = require("./src/routes/menuRouter");
+const orderRouter = require("./src/routes/orderRouter");
+const cartRouter = require("./src/routes/cartRouter");
+const ratingRouter = require("./src/routes/ratingRouter");
+const port = process.env.PORT || 3000;
+const url =
+  "mongodb+srv://rakshitbargotra@gmail.com:AdminRakshit@cluster0.qebwod4.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+app.use("/user", userRouter);
+app.use(
+  "/menu",
   auth,
   (req, res, next) => {
     req.io = io;
     next();
   },
-  router
-];
-
-// Routes
-app.use("/user", userRouter);
-app.use("/menu", ...withIO(menuRouter));
-app.use("/order", ...withIO(orderRouter));
-app.use("/cart", ...withIO(cartRouter));
-app.use("/rating", ...withIO(ratingRouter));
-
-// Load Mongo URI and Port
-const mongoURI = process.env.MONGO_URI;
-const PORT = process.env.PORT || 3000;
-
-if (!mongoURI) {
-  console.error("❌ MONGO_URI not defined in .env");
-  process.exit(1);
-}
-
-// Start server
-server.listen(PORT, async () => {
+  menuRouter
+);
+app.use("/order", auth, (req, res, next) => {
+    req.io = io;
+    next();
+  }, orderRouter);
+app.use(
+  "/cart",
+  auth,
+  (req, res, next) => {
+    req.io = io;
+    next();
+  },
+  cartRouter
+);
+app.use(
+  "/rating",
+  auth,
+  (req, res, next) => {
+    req.io = io;
+    next();
+  },
+  ratingRouter
+);
+server.listen(port, async () => {
   try {
-    await connectDB(mongoURI);
-    console.log(`✅ Server running on http://localhost:${PORT}`);
+    await connectDB(url);
+    console.log(`server is running on http://localhost:${port}`);
   } catch (err) {
-    console.error("❌ MongoDB connection failed:", err);
+    console.log(err);
   }
 });
