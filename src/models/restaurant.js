@@ -1,34 +1,44 @@
 const mongoose = require('mongoose');
 
-const menuItemSchema = new mongoose.Schema({
-  name: String,
-  price: Number,
-  available: { type: Boolean, default: true },
-  image: String, // URL/path
-  description: String,
-  veg: { type: Boolean, default: true },
-  cuisine: String,
-});
-
 const restaurantSchema = new mongoose.Schema({
-  name: String,
-  owner: String,
-  email: { type: String, unique: true },
-  phone: String,
-  password: String,
-  address: String,
-  accountNumber: String,
-  ifsc: String,
-  gst: String,
-  fssai: String,
-  fssaiPhoto: String,
-  verified: { type: Boolean, default: false },
-  operationOn: { type: Boolean, default: true },
-  openingTime: { type: String, default: "09:00" },
-  closingTime: { type: String, default: "22:00" },
-  menu: [menuItemSchema],
-  cuisines: [String],
-  createdAt: { type: Date, default: Date.now }
+  name: {
+    type: String,
+    required: [true, 'A restaurant must have a name']
+  },
+  cuisine: {
+    type: [String],
+    required: [true, 'Please specify cuisine type']
+  },
+  location: {
+    type: {
+      type: String,
+      default: 'Point',
+      enum: ['Point']
+    },
+    coordinates: [Number],
+    address: String,
+    description: String
+  },
+  openingHours: {
+    open: Number,
+    close: Number
+  },
+  imageCover: String,
+  images: [String],
+  rating: {
+    type: Number,
+    default: 4.5,
+    min: [1, 'Rating must be above 1.0'],
+    max: [5, 'Rating must be below 5.0']
+  },
+  deliveryFee: Number,
+  minOrder: Number,
+  owner: {
+    type: mongoose.Schema.ObjectId,
+    ref: 'User'
+  }
 });
 
-module.exports = mongoose.model("Restaurant", restaurantSchema);
+restaurantSchema.index({ location: '2dsphere' });
+
+module.exports = mongoose.model('Restaurant', restaurantSchema);
