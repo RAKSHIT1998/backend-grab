@@ -1,9 +1,45 @@
 const mongoose = require('mongoose');
+
 const driverSchema = new mongoose.Schema({
-  name: String, phone: String, email: String, password: String,
-  vehicleType: { type: String, enum: ["bike", "car", "porter"] },
-  vehicleNo: String, verified: { type: Boolean, default: false },
-  kyc: String, location: { lat: Number, lng: Number }, status: { type: String, default: "offline" },
-  rating: { type: Number, default: 0 }, createdAt: { type: Date, default: Date.now }
+  user: {
+    type: mongoose.Schema.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  vehicleType: {
+    type: String,
+    enum: ['bike', 'car', 'auto'],
+    required: true
+  },
+  vehicleNumber: {
+    type: String,
+    required: true
+  },
+  licenseNumber: {
+    type: String,
+    required: true
+  },
+  isAvailable: {
+    type: Boolean,
+    default: true
+  },
+  currentLocation: {
+    type: {
+      type: String,
+      default: 'Point',
+      enum: ['Point']
+    },
+    coordinates: [Number],
+    address: String
+  },
+  rating: {
+    type: Number,
+    default: 4.5,
+    min: 1,
+    max: 5
+  }
 });
-module.exports = mongoose.model("Driver", driverSchema);
+
+driverSchema.index({ currentLocation: '2dsphere' });
+
+module.exports = mongoose.model('Driver', driverSchema);
