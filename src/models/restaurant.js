@@ -1,44 +1,39 @@
-const mongoose = require('mongoose');
+import mongoose from "mongoose";
 
 const restaurantSchema = new mongoose.Schema({
   name: {
     type: String,
-    required: [true, 'A restaurant must have a name']
+    required: [true, "Restaurant must have a name"],
+    trim: true
   },
   cuisine: {
     type: [String],
-    required: [true, 'Please specify cuisine type']
+    required: [true, "Specify at least one cuisine type"],
+    enum: ["Indian", "Chinese", "Italian", "Mexican", "Continental"]
+  },
+  rating: {
+    type: Number,
+    min: [1, "Rating must be at least 1"],
+    max: [5, "Rating cannot exceed 5"],
+    default: 4.0
+  },
+  deliveryTime: {
+    type: Number,
+    required: [true, "Specify average delivery time"]
+  },
+  image: {
+    type: String,
+    default: "https://via.placeholder.com/150"
   },
   location: {
     type: {
       type: String,
-      default: 'Point',
-      enum: ['Point']
+      default: "Point",
+      enum: ["Point"]
     },
-    coordinates: [Number],
-    address: String,
-    description: String
-  },
-  openingHours: {
-    open: Number,
-    close: Number
-  },
-  imageCover: String,
-  images: [String],
-  rating: {
-    type: Number,
-    default: 4.5,
-    min: [1, 'Rating must be above 1.0'],
-    max: [5, 'Rating must be below 5.0']
-  },
-  deliveryFee: Number,
-  minOrder: Number,
-  owner: {
-    type: mongoose.Schema.ObjectId,
-    ref: 'User'
+    coordinates: [Number]
   }
 });
 
-restaurantSchema.index({ location: '2dsphere' });
-
-module.exports = mongoose.model('Restaurant', restaurantSchema);
+const Restaurant = mongoose.model("Restaurant", restaurantSchema);
+export default Restaurant;
