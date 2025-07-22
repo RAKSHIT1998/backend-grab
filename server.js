@@ -1,57 +1,57 @@
+// backend-grab/server.js
 const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
-const morgan = require("morgan");
+const http = require("http");
+const socketIO = require("socket.io");
+const path = require("path");
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const server = http.createServer(app);
+const io = socketIO(server, {
+  cors: { origin: "*" },
+});
 
-// Middleware
+// Middlewares
 app.use(cors());
 app.use(express.json());
-app.use(morgan("dev"));
+app.use(express.urlencoded({ extended: true }));
 
 // MongoDB Connection
 mongoose
-  .connect("mongodb+srv://rakshit98:AdminRakshit@cluster0.n1m4mu0.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0", {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
-  .then(() => console.log("✅ MongoDB connected"))
-  .catch((err) => console.error("❌ MongoDB connection error:", err));
+  .connect("mongodb+srv://rakshit98:AdminRakshit@cluster0.n1m4mu0.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
+  .then(() => console.log("MongoDB connected"))
+  .catch((err) => console.error("MongoDB connection failed:", err));
 
-// Importing routes
-const userRoutes = require("./src/routes/userRoutes");
-const driverRoutes = require("./src/routes/driverRoutes");
-const restaurantRoutes = require("./src/routes/restaurantRoutes");
-const martRoutes = require("./src/routes/martRoutes");
-const porterRoutes = require("./src/routes/porterRoutes");
-const bikeRoutes = require("./src/routes/bikeRoutes");
-const taxiRoutes = require("./src/routes/taxiRoutes");
-const adminRoutes = require("./src/routes/adminRoutes");
-const walletRoutes = require("./src/routes/walletRoutes");
-const partnerRoutes = require("./src/routes/partnerRoutes");
-const paymentRoutes = require("./src/routes/paymentRoutes");
-
-// API Endpoints
-app.use("/api/users", userRoutes);
-app.use("/api/drivers", driverRoutes);
-app.use("/api/restaurants", restaurantRoutes);
-app.use("/api/marts", martRoutes);
-app.use("/api/porters", porterRoutes);
-app.use("/api/bikes", bikeRoutes);
-app.use("/api/taxis", taxiRoutes);
-app.use("/api/admin", adminRoutes);
-app.use("/api/wallet", walletRoutes);
-app.use("/api/partners", partnerRoutes);
-app.use("/api/payments", paymentRoutes);
-
-// Root health check
-app.get("/", (req, res) => {
-  res.send("🚀 Grap SuperApp backend is running successfully.");
+// Socket.IO Logic
+io.on("connection", (socket) => {
+  console.log("New socket connection:", socket.id);
+  socket.on("disconnect", () => console.log("Socket disconnected:", socket.id));
 });
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`✅ Server is live on port ${PORT}`);
-});
+app.set("io", io); // Make io accessible in routes
+
+// Routes
+app.use("/api/users", require("./src/routes/userRoutes"));
+app.use("/api/drivers", require("./src/routes/driverRoutes"));
+app.use("/api/restaurants", require("./src/routes/restaurantRoutes"));
+app.use("/api/marts", require("./src/routes/martRoutes"));
+app.use("/api/porters", require("./src/routes/porterRoutes"));
+app.use("/api/bikes", require("./src/routes/bikeRoutes"));
+app.use("/api/taxis", require("./src/routes/taxiRoutes"));
+app.use("/api/payments", require("./src/routes/paymentRoutes"));
+app.use("/api/admin", require("./src/routes/adminRoutes"));
+app.use("/api/admin/taxi", require("./src/routes/adminTaxiRoutes"));
+app.use("/api/partners", require("./src/routes/partnerRoutes"));
+app.use("/api/wallets", require("./src/routes/walletRoutes"));
+app.use("/api/ratings", require("./src/routes/ratingRoutes"));
+app.use("/api/cart", require("./src/routes/cartRoutes"));
+app.use("/api/orders", require("./src/routes/orderRoutes"));
+app.use("/api/menus", require("./src/routes/menuRoutes"));
+
+// Health check
+app.get("/", (req, res) => res.send("Grap SuperApp Backend Running"));
+
+// Server listen
+const PORT = process.env.PORT || 8080;
+server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
