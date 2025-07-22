@@ -1,3 +1,4 @@
+// userRouter.js
 const { Router } = require("express");
 const userRouter = Router();
 const validator = require("validator");
@@ -9,158 +10,119 @@ const key = "#479@/^5149*@123";
 const userModel = require("../models/userModel");
 const auth = require("../middleware/auth");
 const { roles } = require("../utils/constant");
-global.verificationCodes = global.verificationCodes || {};
 
+global.verificationCodes = global.verificationCodes || {};
 setInterval(() => {
-  if (global.verificationCodes) {
-    Object.keys(global.verificationCodes).forEach((email) => {
-      if (Date.now() > global.verificationCodes[email].expires) {
-        delete global.verificationCodes[email];
-      }
-    });
-  }
+  Object.keys(global.verificationCodes).forEach((email) => {
+    if (Date.now() > global.verificationCodes[email].expires) {
+      delete global.verificationCodes[email];
+    }
+  });
 }, 5 * 60 * 1000);
 
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
-    user: "grapsuperapp@gmail.com",
+    user: "sneelesh182@gmail.com",
     pass: "jtim dtvp edkz kwnx",
   },
 });
 
 const validateEmailDomain = (email) => {
-  const commonDomains = [
-    "gmail.com",
-    "yahoo.com",
-    "hotmail.com",
-    "outlook.com",
-    "icloud.com",
-    "protonmail.com",
-    "aol.com",
-    "mail.com",
-    "zoho.com",
-    "yandex.com",
-    "live.com",
-    "msn.com",
-    "rediffmail.com",
-    "fastmail.com",
-    "edu",
-  ];
+  const commonDomains = ["gmail.com", "yahoo.com", "hotmail.com", "outlook.com", "icloud.com", "protonmail.com", "aol.com", "mail.com", "zoho.com", "yandex.com", "live.com", "msn.com", "rediffmail.com", "fastmail.com", "edu"];
   const domain = email.split("@")[1];
-  return commonDomains.some(
-    (validDomain) =>
-      domain.toLowerCase().includes(validDomain) ||
-      domain.toLowerCase().endsWith(".edu") ||
-      domain.toLowerCase().endsWith(".org") ||
-      domain.toLowerCase().endsWith(".gov")
-  );
+  return commonDomains.some((d) => domain.includes(d) || domain.endsWith(".edu") || domain.endsWith(".org") || domain.endsWith(".gov"));
 };
 
 const verifyEmailExists = async (email) => {
   try {
-    const verificationCode = crypto
-      .randomBytes(3)
-      .toString("hex")
-      .toUpperCase();
-
-    const mailOptions = {
-      from: "grapsuperapp@gmail.com",
+    const code = crypto.randomBytes(3).toString("hex").toUpperCase();
+    await transporter.sendMail({
+      from: "sneelesh182@gmail.com",
       to: email,
       subject: "Grap SuperApp - Email Verification",
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #333;">Welcome to Grap SuperApp!</h2>
-          <p>Your verification code is:</p>
-          <div style="background-color: #f4f4f4; padding: 20px; text-align: center; font-size: 24px; font-weight: bold; color: #333; border-radius: 5px;">
-            ${verificationCode}
-          </div>
-          <p>This code will expire in 10 minutes.</p>
-          <p>If you didn't request this verification, please ignore this email.</p>
-        </div>
-      `,
-    };
-
-    await transporter.sendMail(mailOptions);
-    return { success: true, code: verificationCode };
-  } catch (error) {
-    return { success: false, error: error.message };
+      html: `<h2>Welcome to Grap!</h2><p>Your verification code is: <b>${code}</b></p>`
+    });
+    return { success: true, code };
+  } catch (err) {
+    return { success: false, error: err.message };
   }
 };
 
 userRouter.post("/register", async (req, res) => {
-  const { email, password, phone, userName, type } = req.body;
+  const { email, password, phone, userName, role } = req.body;
   try {
     if (!validator.isEmail(email)) return res.status(400).json({ message: "Invalid email" });
-    if (!validateEmailDomain(email)) return res.status(400).json({ message: "Use common email domain" });
-    if (password.length < 6) return res.status(400).json({ message: "Password too short" });
-    if (!/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&]{6,}$/.test(password))
+    if (!validateEmailDomain(email)) return res.status(400).json({ message: "Unsupported email domain" });
+    if (password.length < 6 || !/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&]{6,}$/.test(password))
       return res.status(400).json({ message: "Weak password" });
-    if (!/^[6-9]\d{9}$/.test(phone.replace(/[\s\-\(\)]/g, "")))
-      return res.status(400).json({ message: "Invalid phone" });
-    if (!validator.isMobilePhone(phone, "en-IN")) return res.status(400).json({ message: "Phone required" });
+    if (!/^[6-9]\d{9}$/.test(phone)) return res.status(400).json({ message: "Invalid Indian phone" });
 
-    const existingUser = await userModel.findOne({ email });
-    if (existingUser) return res.status(400).json({ message: "User exists" });
+    const existing = await userModel.findOne({ email });
+    if (existing) return res.status(400).json({ message: "User exists" });
 
-    const emailVerification = await verifyEmailExists(email);
-    if (!emailVerification.success) return res.status(400).json({ message: "Email issue", type: "email_not_exists" });
+    const emailCheck = await verifyEmailExists(email);
+    if (!emailCheck.success) return res.status(400).json({ message: "Email failed" });
 
     global.verificationCodes[email] = {
-      code: emailVerification.code,
-      userData: { email, password, phone, userName, type },
+      code: emailCheck.code,
+      userData: { email, password, phone, userName, role },
       expires: Date.now() + 10 * 60 * 1000,
     };
-
-    return res.status(200).json({
-      message: "Verification code sent",
-      email,
-    });
+    res.status(200).json({ message: "Code sent", email });
   } catch (err) {
-    return res.status(500).json({ message: "Internal error" });
+    res.status(500).json({ message: "Server error" });
   }
 });
 
 userRouter.post("/verify-email", async (req, res) => {
   const { email, verificationCode } = req.body;
-  try {
-    const stored = global.verificationCodes[email];
-    if (!stored || Date.now() > stored.expires)
-      return res.status(400).json({ message: "Code expired or not found" });
-
-    if (stored.code !== verificationCode.toUpperCase())
-      return res.status(400).json({ message: "Wrong code" });
-
-    const { password, phone, userName, type } = stored.userData;
-    const roleMap = {
-      user: roles.user,
-      restaurant: roles.restaurant,
-      mart: roles.mart,
-      driver: roles.driver,
-      porter: roles.porter,
-    };
-    const role = roleMap[type] || roles.user;
-
-    bcrypt.hash(password, 8, async (err, hash) => {
-      if (err) return res.status(400).json({ message: "Hash error" });
-      const user = await userModel.create({
-        email,
-        password: hash,
-        phone,
-        userName,
-        role,
-        emailVerified: true,
-      });
-      delete global.verificationCodes[email];
-      return res.status(201).json({
-        message: "Email verified and account created",
-        user: user._id,
-        role: user.role,
-      });
-    });
-  } catch (err) {
-    return res.status(500).json({ message: "Internal error" });
+  const stored = global.verificationCodes[email];
+  if (!stored || stored.code !== verificationCode.toUpperCase() || Date.now() > stored.expires) {
+    return res.status(400).json({ message: "Invalid or expired code" });
   }
+
+  const { password, phone, userName, role } = stored.userData;
+  const hashed = await bcrypt.hash(password, 8);
+  const user = await userModel.create({
+    email,
+    password: hashed,
+    phone,
+    userName,
+    role: roles[role] || roles.user,
+    emailVerified: true,
+  });
+  delete global.verificationCodes[email];
+  res.status(201).json({ message: "Verified", user: user._id });
+});
+
+userRouter.post("/login", async (req, res) => {
+  const { email, password } = req.body;
+  const user = await userModel.findOne({ email });
+  if (!user || !user.activity) return res.status(403).json({ message: "Inactive or not found" });
+  const match = await bcrypt.compare(password, user.password);
+  if (!match) return res.status(400).json({ message: "Wrong credentials" });
+  const token = jwt.sign({ email, id: user._id, userName: user.userName }, key);
+  res.status(200).json({ token, user: user._id, role: user.role });
+});
+
+userRouter.get("/all", async (req, res) => {
+  const users = await userModel.find({});
+  res.status(200).json(users);
+});
+
+userRouter.patch("/update-role/:id", async (req, res) => {
+  const { id } = req.params;
+  const { role } = req.body;
+  await userModel.findByIdAndUpdate(id, { role });
+  res.status(200).json({ message: `Role updated to ${role}` });
+});
+
+userRouter.patch("/toggle-activity/:id", async (req, res) => {
+  const user = await userModel.findById(req.params.id);
+  user.activity = !user.activity;
+  await user.save();
+  res.status(200).json({ message: `User ${user.activity ? "Enabled" : "Disabled"}` });
 });
 
 module.exports = userRouter;
