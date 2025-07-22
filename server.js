@@ -12,7 +12,7 @@ dotenv.config();
 const app = express();
 const server = http.createServer(app);
 
-// Initialize Socket.IO
+// Initialize Socket.IO with namespaces and secure auth
 initSocketServer(server);
 
 // Middleware
@@ -20,11 +20,13 @@ app.use(express.json());
 app.use(cors());
 app.use("/uploads", express.static("uploads"));
 
-// Connect to MongoDB
-const MONGO_URI = process.env.MONGO_URI || "mongodb+srv://rakshit98:AdminRakshit@cluster0.n1m4mu0.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+// MongoDB connection URI
+const MONGO_URI =
+  process.env.MONGO_URI ||
+  "mongodb+srv://rakshit98:AdminRakshit@cluster0.n1m4mu0.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
 connectDB(MONGO_URI);
 
-// Import Routes
+// Routes
 const userRouter = require("./src/routes/userRoutes");
 const driverRouter = require("./src/routes/driverRoutes");
 const restaurantRouter = require("./src/routes/restaurantRoutes");
@@ -34,7 +36,7 @@ const bikeRouter = require("./src/routes/bikeRoutes");
 const taxiRouter = require("./src/routes/taxiRoutes");
 const adminTaxiRoutes = require("./src/routes/adminTaxiRoutes");
 
-// Route Bindings
+// API Route Bindings
 app.use("/api/users", userRouter);
 app.use("/api/drivers", driverRouter);
 app.use("/api/restaurants", restaurantRouter);
