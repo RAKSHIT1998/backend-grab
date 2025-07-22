@@ -1,46 +1,105 @@
-const express = require('express');
-const router = express.Router();
-const Restaurant = require('../models/restaurant');
-const multer = require('multer');
-const path = require('path');
+// src/routes/restaurantRoutes.js
+const express = require("express");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+const Restaurant = require("../models/restaurantModel");
+const { roles } = require("../utils/constant");
+const auth = require("../middleware/auth");
+const { v4: uuidv4 } = require("uuid");
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, 'uploads/'),
-  filename: (req, file, cb) => cb(null, Date.now() + path.extname(file.originalname)),
-});
-const upload = multer({ storage });
+const restaurantRouter = express.Router();
+const secret = "#479@/^5149*@123";
 
-// Add menu item with image
-// (Removed duplicate POST /menu route to avoid conflicts)
-
-// Get restaurant menu
-router.get('/menu/:restaurantId', async (req, res) => {
-  const restaurant = await Restaurant.findById(req.params.restaurantId);
-  if (!restaurant) return res.status(404).json({ error: "Restaurant not found" });
-  res.json(restaurant.menu);
-});
-
-// POST /api/restaurants/menu
-router.post('/menu', upload.single('image'), async (req, res) => {
+// Register restaurant
+restaurantRouter.post("/register", async (req, res) => {
   try {
-    const { restaurantId, name, price, description, veg, cuisine, available } = req.body;
-    const restaurant = await Restaurant.findById(restaurantId);
-    if (!restaurant) return res.status(404).json({ error: "Restaurant not found" });
+    const { email, phone, password, name, location } = req.body;
+    const existing = await Restaurant.findOne({ email });
+    if (existing) return res.status(400).json({ message: "Restaurant already exists" });
 
-    const menuItem = {
+    const hashed = await bcrypt.hash(password, 8);
+    const restaurant = await Restaurant.create({
+      email,
+      phone,
+      password: hashed,
       name,
-      price,
-      description,
-      veg: veg === "true" || veg === true,
-      cuisine,
-      available: available === undefined ? true : available === "true" || available === true,
-      image: req.file ? `/uploads/${req.file.filename}` : undefined,
-    };
-    restaurant.menu.push(menuItem);
-    await restaurant.save();
-    res.status(201).json({ message: "Menu item added", menu: restaurant.menu });
+      location,
+      approved: false,
+      active: true,
+      role: roles.partner,
+      restaurantId: uuidv4(),
+    });
+
+    res.status(201).json({ message: "Restaurant registered, pending approval", restaurantId: restaurant._id });
   } catch (err) {
-    res.status(500).json({ error: "Failed to add menu item", details: err.message });
+    console.error("Restaurant registration error:", err);
+    res.status(500).json({ message: "Server error" });
   }
 });
-module.exports = router;
+
+// Login
+restaurantRouter.post("/login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const restaurant = await Restaurant.findOne({ email });
+    if (!restaurant) return res.status(404).json({ message: "Restaurant not found" });
+    if (!restaurant.approved) return res.status(403).json({ message: "Not approved by admin" });
+    if (!restaurant.active) return res.status(403).json({ message: "Account disabled" });
+
+    const match = await bcrypt.compare(password, restaurant.password);
+    if (!match) return res.status(400).json({ message: "Invalid credentials" });
+
+    const token = jwt.sign({ id: restaurant._id, role: restaurant.role }, secret);
+    res.json({ token, restaurant });
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// Get all restaurants (admin)
+restaurantRouter.get("/", async (req, res) => {
+  try {
+    const restaurants = await Restaurant.find();
+    res.json(restaurants);
+  } catch (err) {
+    res.status(500).json({ message: "Failed to fetch restaurants" });
+  }
+});
+
+// Approve restaurant (admin)
+restaurantRouter.patch("/approve/:id", async (req, res) => {
+  try {
+    const restaurant = await Restaurant.findById(req.params.id);
+    if (!restaurant) return res.status(404).json({ message: "Not found" });
+    restaurant.approved = true;
+    await restaurant.save();
+    res.json({ message: "Restaurant approved" });
+  } catch (err) {
+    res.status(500).json({ message: "Failed to approve" });
+  }
+});
+
+// Toggle restaurant activity (admin)
+restaurantRouter.patch("/toggle/:id", async (req, res) => {
+  try {
+    const restaurant = await Restaurant.findById(req.params.id);
+    if (!restaurant) return res.status(404).json({ message: "Not found" });
+    restaurant.active = !restaurant.active;
+    await restaurant.save();
+    res.json({ message: `Restaurant ${restaurant.active ? "enabled" : "disabled"}` });
+  } catch (err) {
+    res.status(500).json({ message: "Toggle error" });
+  }
+});
+
+// Delete restaurant (admin)
+restaurantRouter.delete("/:id", async (req, res) => {
+  try {
+    await Restaurant.findByIdAndDelete(req.params.id);
+    res.json({ message: "Deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ message: "Delete error" });
+  }
+});
+
+module.exports = restaurantRouter;
