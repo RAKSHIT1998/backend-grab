@@ -1,102 +1,53 @@
-import dotenv from 'dotenv';
-import express from 'express';
-import cors from 'cors';
-import mongoose from 'mongoose';
-import morgan from 'morgan';
-import helmet from 'helmet';
-import rateLimit from 'express-rate-limit';
-import compression from 'compression';
-import { createServer } from 'http';
-import { Server } from 'socket.io';
+const express = require("express");
+const cors = require("cors");
+const mongoose = require("mongoose");
+const userRouter = require("./routes/userRoutes");
+const driverRouter = require("./routes/driverRoutes");
+const restaurantRouter = require("./routes/restaurantRoutes");
+const martRouter = require("./routes/martRoutes");
+const porterRouter = require("./routes/porterRoutes");
+const bikeRouter = require("./routes/bikeRoutes");
+const taxiRouter = require("./routes/taxiRoutes");
+const adminRouter = require("./routes/adminRoutes");
+const paymentRouter = require("./routes/paymentRoutes");
+const walletRouter = require("./routes/walletRoutes");
+const partnerRouter = require("./routes/partnerRoutes");
 
-// Load env vars
-dotenv.config({ path: './.env' });
-
-// Validate required env variables
-const requiredEnvVars = ['JWT_SECRET', 'MONGODB_URI'];
-requiredEnvVars.forEach(env => {
-  if (!process.env[env]) {
-    console.error(`❌ Missing required environment variable: ${env}`);
-    process.exit(1);
-  }
-});
-
-// Initialize Express
 const app = express();
-const httpServer = createServer(app);
-const io = new Server(httpServer, {
-  cors: {
-    origin: process.env.CORS_ORIGINS?.split(',') || ['http://localhost:3000'],
-    credentials: true
-  }
-});
+const PORT = process.env.PORT || 8080;
 
-// Socket.io connection handler
-io.on('connection', (socket) => {
-  console.log('New client connected');
-  socket.on('disconnect', () => {
-    console.log('Client disconnected');
-  });
-});
-
-// Global Middleware Stack
-app.use(helmet());
-app.use(cors({
-  origin: process.env.CORS_ORIGINS?.split(',') || ['http://localhost:3000'],
-  credentials: true
-}));
-app.use(express.json({ limit: '10kb' }));
+// Middleware
+app.use(cors());
+app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(compression());
-app.use(morgan('dev'));
 
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
-  message: 'Too many requests from this IP, please try again later'
-});
-app.use('/api', limiter);
-
-// Database Connection
-mongoose.connect(process.env.MONGODB_URI)
-  .then(() => console.log('✅ MongoDB connected successfully'))
-  .catch(err => {
-    console.error('❌ MongoDB connection error:', err);
-    process.exit(1);
-  });
+// MongoDB connection
+mongoose
+  .connect("your_mongodb_uri_here", {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
+  .then(() => console.log("✅ MongoDB connected"))
+  .catch((err) => console.error("❌ MongoDB connection error:", err));
 
 // Routes
-import userRoutes from './routes/userRoutes.js';
-import restaurantRoutes from './routes/restaurantRoutes.js';
-import orderRoutes from './routes/orderRoutes.js';
-
-app.use('/api/users', userRoutes);
-app.use('/api/restaurants', restaurantRoutes);
-app.use('/api/orders', orderRoutes);
+app.use("/api/users", userRouter);
+app.use("/api/drivers", driverRouter);
+app.use("/api/restaurants", restaurantRouter);
+app.use("/api/mart", martRouter);
+app.use("/api/porter", porterRouter);
+app.use("/api/bike", bikeRouter);
+app.use("/api/taxi", taxiRouter);
+app.use("/api/admin", adminRouter);
+app.use("/api/payment", paymentRouter);
+app.use("/api/wallet", walletRouter);
+app.use("/api/partner", partnerRouter);
 
 // Health Check
-app.get('/api/health', (req, res) => {
-  res.status(200).json({
-    status: 'healthy',
-    database: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected'
-  });
+app.get("/", (req, res) => {
+  res.send("🚀 Grap SuperApp Backend is running");
 });
 
-// Error Handling Middleware
-app.use((err, req, res, next) => {
-  console.error('🔥 Error:', err.stack);
-  res.status(err.statusCode || 500).json({
-    status: err.status || 'error',
-    message: err.message,
-    ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
-  });
+app.listen(PORT, () => {
+  console.log(`🌐 Server running at http://localhost:${PORT}`);
 });
-
-// Start Server
-const PORT = process.env.PORT || 10000;
-httpServer.listen(PORT, () => {
-  console.log(`🚀 Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
-});
-
-export { app, io };
