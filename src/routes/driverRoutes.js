@@ -1,106 +1,55 @@
-// src/routes/driverRoutes.js
-const express = require("express");
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
-const { v4: uuidv4 } = require("uuid");
-const Driver = require("../models/driverModel");
-const auth = require("../middleware/auth");
-const { roles } = require("../utils/constant");
+// src/routes/driverRoutes.js (ESM version)
 
-const driverRouter = express.Router();
-const secret = "#479@/^5149*@123";
+import express from 'express';
+import { v4 as uuidv4 } from 'uuid';
+import Driver from '../models/driverModel.js';
 
-// Register Driver
-driverRouter.post("/register", async (req, res) => {
+const router = express.Router();
+
+// Register driver
+router.post('/register', async (req, res) => {
   try {
-    const { email, phone, password, name, type } = req.body;
-    const existing = await Driver.findOne({ email });
-    if (existing) return res.status(400).json({ message: "Driver already exists" });
-
-    const hashed = await bcrypt.hash(password, 8);
-    const driver = await Driver.create({
-      email,
-      phone,
-      password: hashed,
-      name,
-      type, // 'bike' | 'taxi' | 'porter'
-      approved: false,
-      active: true,
-      role: roles.driver,
-      driverId: uuidv4(),
-    });
-
-    res.status(201).json({ message: "Driver registered, pending admin approval", driverId: driver._id });
-  } catch (err) {
-    console.error("Register error:", err);
-    res.status(500).json({ message: "Server error" });
-  }
-});
-
-// Driver Login
-driverRouter.post("/login", async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    const driver = await Driver.findOne({ email });
-    if (!driver) return res.status(404).json({ message: "Driver not found" });
-    if (!driver.approved) return res.status(403).json({ message: "Not approved by admin" });
-    if (!driver.active) return res.status(403).json({ message: "Account disabled" });
-
-    const match = await bcrypt.compare(password, driver.password);
-    if (!match) return res.status(400).json({ message: "Invalid credentials" });
-
-    const token = jwt.sign({ id: driver._id, role: driver.role }, secret);
-    res.json({ token, driver });
-  } catch (err) {
-    console.error("Login error:", err);
-    res.status(500).json({ message: "Server error" });
-  }
-});
-
-// Get All Drivers (Admin)
-driverRouter.get("/", async (req, res) => {
-  try {
-    const drivers = await Driver.find();
-    res.json(drivers);
-  } catch (err) {
-    res.status(500).json({ message: "Error fetching drivers" });
-  }
-});
-
-// Approve Driver (Admin)
-driverRouter.patch("/approve/:id", async (req, res) => {
-  try {
-    const driver = await Driver.findById(req.params.id);
-    if (!driver) return res.status(404).json({ message: "Driver not found" });
-    driver.approved = true;
+    const driver = new Driver({ ...req.body, driverId: uuidv4() });
     await driver.save();
-    res.json({ message: "Driver approved" });
+    res.status(201).json({ success: true, driver });
   } catch (err) {
-    res.status(500).json({ message: "Error approving driver" });
+    res.status(400).json({ success: false, error: err.message });
   }
 });
 
-// Toggle Driver Active Status (Admin)
-driverRouter.patch("/toggle/:id", async (req, res) => {
+// Login driver
+router.post('/login', async (req, res) => {
+  try {
+    const driver = await Driver.findOne({ phone: req.body.phone });
+    if (!driver || driver.password !== req.body.password) {
+      return res.status(401).json({ success: false, message: 'Invalid credentials' });
+    }
+    res.status(200).json({ success: true, driver });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Toggle driver availability
+router.patch('/:id/toggle', async (req, res) => {
   try {
     const driver = await Driver.findById(req.params.id);
-    if (!driver) return res.status(404).json({ message: "Driver not found" });
     driver.active = !driver.active;
     await driver.save();
-    res.json({ message: `Driver ${driver.active ? "enabled" : "disabled"}` });
+    res.json({ success: true, active: driver.active });
   } catch (err) {
-    res.status(500).json({ message: "Error toggling driver status" });
+    res.status(500).json({ success: false, error: err.message });
   }
 });
 
-// Delete Driver
-driverRouter.delete("/:id", async (req, res) => {
+// Get driver by ID
+router.get('/:id', async (req, res) => {
   try {
-    await Driver.findByIdAndDelete(req.params.id);
-    res.json({ message: "Driver deleted" });
+    const driver = await Driver.findById(req.params.id);
+    res.json(driver);
   } catch (err) {
-    res.status(500).json({ message: "Error deleting driver" });
+    res.status(404).json({ success: false, message: 'Driver not found' });
   }
 });
 
-module.exports = driverRouter;
+export default router;
