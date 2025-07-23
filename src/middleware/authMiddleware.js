@@ -1,51 +1,85 @@
 // src/middleware/authMiddleware.js
 import jwt from 'jsonwebtoken';
+import asyncHandler from 'express-async-handler';
+import User from '../models/userModel.js';
+import Driver from '../models/driverModel.js';
+import Restaurant from '../models/restaurantModel.js';
 
-export const protect = (req, res, next) => {
-  let token = req.headers.authorization;
+// Middleware to protect user routes
+export const protectUser = asyncHandler(async (req, res, next) => {
+  let token;
 
-  if (token && token.startsWith("Bearer ")) {
-    token = token.split(" ")[1];
+  if (req.headers.authorization?.startsWith('Bearer')) {
+    token = req.headers.authorization.split(' ')[1];
 
-    try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET || "defaultsecret");
-      req.user = decoded;
-      next();
-    } catch (err) {
-      res.status(401).json({ message: "Invalid or expired token" });
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'defaultsecret');
+
+    const user = await User.findById(decoded.id).select('-password');
+    if (!user) {
+      res.status(401);
+      throw new Error('Not authorized, user not found');
     }
+
+    req.user = user;
+    next();
   } else {
-    res.status(401).json({ message: "Authorization token missing" });
+    res.status(401);
+    throw new Error('Not authorized, no token');
   }
-};
-
-// src/utils/generateToken.js
-import jwt from 'jsonwebtoken';
-
-export const generateToken = (user, expiresIn = "7d") => {
-  return jwt.sign(
-    {
-      _id: user._id,
-      role: user.role,
-      name: user.name,
-      email: user.email || null,
-      phone: user.phone || null,
-    },
-    process.env.JWT_SECRET || "defaultsecret",
-    {
-      expiresIn,
-    }
-  );
-};
-
-// Example usage in a protected route
-import express from 'express';
-import { protect } from '../middleware/authMiddleware.js';
-
-const router = express.Router();
-
-router.get('/protected', protect, (req, res) => {
-  res.json({ message: 'You are authenticated', user: req.user });
 });
 
-export default router;
+// Middleware to protect driver routes
+export const protectDriver = asyncHandler(async (req, res, next) => {
+  let token;
+
+  if (req.headers.authorization?.startsWith('Bearer')) {
+    token = req.headers.authorization.split(' ')[1];
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'defaultsecret');
+
+    const driver = await Driver.findById(decoded.id).select('-password');
+    if (!driver) {
+      res.status(401);
+      throw new Error('Not authorized, driver not found');
+    }
+
+    req.driver = driver;
+    next();
+  } else {
+    res.status(401);
+    throw new Error('Not authorized, no token');
+  }
+});
+
+// Middleware to protect restaurant routes
+export const protectRestaurant = asyncHandler(async (req, res, next) => {
+  let token;
+
+  if (req.headers.authorization?.startsWith('Bearer')) {
+    token = req.headers.authorization.split(' ')[1];
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'defaultsecret');
+
+    const restaurant = await Restaurant.findById(decoded.id).select('-password');
+    if (!restaurant) {
+      res.status(401);
+      throw new Error('Not authorized, restaurant not found');
+    }
+
+    req.restaurant = restaurant;
+    next();
+  } else {
+    res.status(401);
+    throw new Error('Not authorized, no token');
+  }
+});
+
+// Admin guard middleware
+export const adminOnly = (req, res, next) => {
+  if (req.user && req.user.role === 'admin') {
+    next();
+  } else {
+    res.status(403);
+    throw new Error('Admin access required');
+  }
+};
