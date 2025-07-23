@@ -1,54 +1,63 @@
-// src/routes/driverRoutes.js (ESM version)
+// ✅ driverRoutes.js
 
-import express from 'express';
-import { v4 as uuidv4 } from 'uuid';
-import Driver from '../models/driverModel.js';
+import express from "express";
+import Driver from "../models/driverModel.js";
+import authMiddleware from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-// Register driver
-router.post('/register', async (req, res) => {
+// Register new driver
+router.post("/register", async (req, res) => {
   try {
-    const driver = new Driver({ ...req.body, driverId: uuidv4() });
+    const driver = new Driver(req.body);
     await driver.save();
-    res.status(201).json({ success: true, driver });
-  } catch (err) {
-    res.status(400).json({ success: false, error: err.message });
+    res.status(201).json(driver);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
   }
 });
 
 // Login driver
-router.post('/login', async (req, res) => {
+router.post("/login", async (req, res) => {
+  const { email, password } = req.body;
   try {
-    const driver = await Driver.findOne({ phone: req.body.phone });
-    if (!driver || driver.password !== req.body.password) {
-      return res.status(401).json({ success: false, message: 'Invalid credentials' });
+    const driver = await Driver.findOne({ email });
+    if (!driver || driver.password !== password) {
+      return res.status(401).json({ error: "Invalid credentials" });
     }
-    res.status(200).json({ success: true, driver });
-  } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
-  }
-});
-
-// Toggle driver availability
-router.patch('/:id/toggle', async (req, res) => {
-  try {
-    const driver = await Driver.findById(req.params.id);
-    driver.active = !driver.active;
-    await driver.save();
-    res.json({ success: true, active: driver.active });
-  } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
-  }
-});
-
-// Get driver by ID
-router.get('/:id', async (req, res) => {
-  try {
-    const driver = await Driver.findById(req.params.id);
     res.json(driver);
-  } catch (err) {
-    res.status(404).json({ success: false, message: 'Driver not found' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get all drivers (admin only)
+router.get("/all", authMiddleware, async (req, res) => {
+  try {
+    const drivers = await Driver.find();
+    res.json(drivers);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Update driver profile
+router.put("/:id", authMiddleware, async (req, res) => {
+  try {
+    const updated = await Driver.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    res.json(updated);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// Delete driver
+router.delete("/:id", authMiddleware, async (req, res) => {
+  try {
+    await Driver.findByIdAndDelete(req.params.id);
+    res.json({ message: "Driver deleted" });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 });
 
