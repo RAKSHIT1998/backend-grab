@@ -1,5 +1,4 @@
-// src/middleware/authMiddleware.js
-import jwt from "jsonwebtoken";
+import jwt from 'jsonwebtoken';
 
 export const protect = (req, res, next) => {
   let token = req.headers.authorization;
@@ -8,13 +7,13 @@ export const protect = (req, res, next) => {
     token = token.split(" ")[1];
 
     try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET || "secret");
+      const decoded = jwt.verify(token, process.env.JWT_SECRET || "defaultsecret");
       req.user = decoded;
       next();
     } catch (err) {
-      return res.status(401).json({ message: "Invalid token" });
+      res.status(401).json({ message: "Invalid or expired token" });
     }
   } else {
-    return res.status(401).json({ message: "Not authorized, token missing" });
+    res.status(401).json({ message: "Authorization token missing" });
   }
 };
