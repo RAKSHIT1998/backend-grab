@@ -1,53 +1,73 @@
-const express = require("express");
-const http = require("http");
-const cors = require("cors");
-const dotenv = require("dotenv");
-const { initSocketServer } = require("./src/socket/socket");
-const connectDB = require("./src/configs/mongoose");
+// server.js
+import express from 'express';
+import dotenv from 'dotenv';
+import http from 'http';
+import { Server } from 'socket.io';
+import cors from 'cors';
+import helmet from 'helmet';
+import compression from 'compression';
+import morgan from 'morgan';
+import connectDB from './config/db.js';
+import { configureSocket } from './socket.js';
+import { notFound, errorHandler } from './middleware/errorMiddleware.js';
 
-// Load environment variables
+// Import all routers
+import userRoutes from './routes/userRoutes.js';
+import driverRoutes from './routes/driverRoutes.js';
+import restaurantRoutes from './routes/restaurantRoutes.js';
+import adminRoutes from './routes/adminRoutes.js';
+import martRoutes from './routes/martRoutes.js';
+import partnerRoutes from './routes/partnerRoutes.js';
+import orderRoutes from './routes/orderRoutes.js';
+import ratingRoutes from './routes/ratingRoutes.js';
+import paymentRoutes from './routes/paymentRoutes.js';
+import walletRoutes from './routes/walletRoutes.js';
+import taxiRoutes from './routes/taxiRoutes.js';
+import bikeRoutes from './routes/bikeRoutes.js';
+import porterRoutes from './routes/porterRoutes.js';
+
 dotenv.config();
+connectDB();
 
-// Initialize express and HTTP server
 const app = express();
 const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: '*',
+    methods: ['GET', 'POST'],
+  },
+});
 
-// Initialize Socket.IO with namespaces and secure auth
-initSocketServer(server);
+// Socket configuration
+configureSocket(io);
 
-// Middleware
-app.use(express.json());
 app.use(cors());
-app.use("/uploads", express.static("uploads"));
-
-// MongoDB connection URI
-const MONGO_URI =
-  process.env.MONGO_URI ||
-  "mongodb+srv://rakshit98:AdminRakshit@cluster0.n1m4mu0.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
-connectDB(MONGO_URI);
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(helmet());
+app.use(compression());
+app.use(morgan('dev'));
 
 // Routes
-const userRouter = require("./src/routes/userRoutes");
-const driverRouter = require("./src/routes/driverRoutes");
-const restaurantRouter = require("./src/routes/restaurantRoutes");
-const martRouter = require("./src/routes/martRoutes");
-const porterRouter = require("./src/routes/porterRoutes");
-const bikeRouter = require("./src/routes/bikeRoutes");
-const taxiRouter = require("./src/routes/taxiRoutes");
-const adminTaxiRoutes = require("./src/routes/adminTaxiRoutes");
+app.use('/api/users', userRoutes);
+app.use('/api/drivers', driverRoutes);
+app.use('/api/restaurants', restaurantRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/mart', martRoutes);
+app.use('/api/partners', partnerRoutes);
+app.use('/api/orders', orderRoutes);
+app.use('/api/ratings', ratingRoutes);
+app.use('/api/payments', paymentRoutes);
+app.use('/api/wallet', walletRoutes);
+app.use('/api/taxi', taxiRoutes);
+app.use('/api/bike', bikeRoutes);
+app.use('/api/porter', porterRoutes);
 
-// API Route Bindings
-app.use("/api/users", userRouter);
-app.use("/api/drivers", driverRouter);
-app.use("/api/restaurants", restaurantRouter);
-app.use("/api/mart", martRouter);
-app.use("/api/porter", porterRouter);
-app.use("/api/bike", bikeRouter);
-app.use("/api/taxi", taxiRouter);
-app.use("/api/admin/taxi", adminTaxiRoutes);
+// Error handlers
+app.use(notFound);
+app.use(errorHandler);
 
-// Start Server
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
+  console.log(`🚀 Server running on port ${PORT}`);
 });
