@@ -3,31 +3,12 @@ import mongoose from 'mongoose';
 
 const porterSchema = new mongoose.Schema(
   {
-    name: {
-      type: String,
-      required: true,
-    },
-    phone: {
-      type: String,
-      required: true,
-      unique: true,
-    },
-    password: {
-      type: String,
-      required: true,
-    },
-    isApproved: {
-      type: Boolean,
-      default: false,
-    },
-    isActive: {
-      type: Boolean,
-      default: false,
-    },
-    vehicleNumber: {
-      type: String,
-      required: true,
-    },
+    name: { type: String, required: true },
+    phone: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
+    vehicleNumber: { type: String, required: true },
+    isApproved: { type: Boolean, default: false },
+    isActive: { type: Boolean, default: false },
     location: {
       lat: Number,
       lng: Number,
