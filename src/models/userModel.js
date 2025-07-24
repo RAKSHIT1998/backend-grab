@@ -1,23 +1,46 @@
+import mongoose from 'mongoose';
+import validator from 'validator';
 
-const { Schema, model } = require("mongoose");
-const { roles } = require("../utils/constant");
-const userSchema = new Schema(
+const userSchema = new mongoose.Schema(
   {
-    email: { type: String, required: true, unique: true },
-    password: { type: String, required: true },
-    phone: { type: String, required: true },
-    userName: { type: String, required: true },
+    name: {
+      type: String,
+      required: [true, 'Please add a name'],
+    },
+    email: {
+      type: String,
+      required: [true, 'Please add an email'],
+      unique: true,
+      lowercase: true,
+      validate: [validator.isEmail, 'Please enter a valid email'],
+    },
+    password: {
+      type: String,
+      required: [true, 'Please add a password'],
+      minlength: 6,
+    },
+    phone: {
+      type: String,
+      required: true,
+      validate: [validator.isMobilePhone, 'Invalid phone number'],
+    },
     role: {
       type: String,
-      enum: [roles.admin, roles.user],
-      default: roles.user,
+      enum: ['user', 'admin', 'driver', 'partner', 'biker', 'porter', 'taxi'],
+      default: 'user',
     },
-    activity: { type: Boolean, default: true },
-    emailVerified: { type: Boolean, default: false },
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
+    verified: {
+      type: Boolean,
+      default: false,
+    },
+    otp: String,
+    otpExpires: Date,
   },
-  {
-    timestamps: true,
-  }
+  { timestamps: true }
 );
-const userModel = model("customers", userSchema);
-module.exports = userModel;
+
+export const User = mongoose.model('User', userSchema);
