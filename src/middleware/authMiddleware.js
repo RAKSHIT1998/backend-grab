@@ -1,10 +1,10 @@
 // src/middleware/authMiddleware.js
 import jwt from 'jsonwebtoken';
-import User from '../models/userModel.js';
-import Driver from '../models/driverModel.js';
-import Restaurant from '../models/restaurantModel.js';
-import Mart from '../models/martModel.js';
-import Porter from '../models/porterModel.js';
+import User from './src/models/userModel.js';
+import Driver from './src/models/driverModel.js';
+import Restaurant from './src/models/restaurantModel.js';
+import Mart from './src/models/martModel.js';
+import Porter from './src/models/porterModel.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || '#479@/^5149*@123';
 
