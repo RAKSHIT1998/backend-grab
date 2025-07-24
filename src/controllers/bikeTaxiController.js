@@ -1,67 +1,47 @@
-// src/controllers/bikeController.js
+// backend-grab/src/controllers/bikeController.js
 
 import asyncHandler from 'express-async-handler';
-import Ride from '../models/rideModel.js';
-import Delivery from '../models/deliveryModel.js';
-import User from '../models/userModel.js';
+import BikeBooking from '../models/bikeBookingModel.js';
+import Order from '../models/orderModel.js'; // Assuming food and mart use this
+import PorterOrder from '../models/porterModel.js'; // Porter model
 
-// POST /bike-taxi/ride
-export const createBikeTaxiRide = asyncHandler(async (req, res) => {
-  const { userId, pickupLocation, dropoffLocation, fareEstimate } = req.body;
-  const ride = await Ride.create({
-    type: 'bike-taxi',
-    user: userId,
-    pickupLocation,
-    dropoffLocation,
-    fare: fareEstimate,
-    status: 'pending',
-  });
-  res.status(201).json({ success: true, data: ride });
+// 1. Bike Taxi Booking
+export const createBikeTaxiBooking = asyncHandler(async (req, res) => {
+  const { pickup, drop, user, fare } = req.body;
+  const booking = await BikeBooking.create({ type: 'bike-taxi', pickup, drop, user, fare });
+  res.status(201).json({ success: true, booking });
 });
 
-// POST /bike-delivery/food
-export const createFoodDelivery = asyncHandler(async (req, res) => {
-  const { userId, restaurantId, items, pickupLocation, dropoffLocation, totalPrice } = req.body;
-  const delivery = await Delivery.create({
-    type: 'food',
-    user: userId,
-    partner: restaurantId,
-    items,
-    pickupLocation,
-    dropoffLocation,
-    fare: totalPrice,
-    status: 'pending',
-  });
-  res.status(201).json({ success: true, data: delivery });
+// 2. Food Delivery Order (Bike based)
+export const createFoodDeliveryOrder = asyncHandler(async (req, res) => {
+  const { items, restaurantId, userId, address, totalAmount } = req.body;
+  const order = await Order.create({ type: 'food', items, restaurantId, userId, address, totalAmount, mode: 'bike' });
+  res.status(201).json({ success: true, order });
 });
 
-// POST /bike-delivery/mart
-export const createMartDelivery = asyncHandler(async (req, res) => {
-  const { userId, storeId, items, pickupLocation, dropoffLocation, totalPrice } = req.body;
-  const delivery = await Delivery.create({
-    type: 'mart',
-    user: userId,
-    partner: storeId,
-    items,
-    pickupLocation,
-    dropoffLocation,
-    fare: totalPrice,
-    status: 'pending',
-  });
-  res.status(201).json({ success: true, data: delivery });
+// 3. Mart Delivery Order (Bike based)
+export const createMartDeliveryOrder = asyncHandler(async (req, res) => {
+  const { items, storeId, userId, address, totalAmount } = req.body;
+  const order = await Order.create({ type: 'mart', items, storeId, userId, address, totalAmount, mode: 'bike' });
+  res.status(201).json({ success: true, order });
 });
 
-// POST /bike-delivery/porter
+// 4. Porter Booking
 export const createPorterDelivery = asyncHandler(async (req, res) => {
-  const { userId, parcelDetails, pickupLocation, dropoffLocation, fareEstimate } = req.body;
-  const delivery = await Delivery.create({
-    type: 'porter',
-    user: userId,
-    parcelDetails,
-    pickupLocation,
-    dropoffLocation,
-    fare: fareEstimate,
-    status: 'pending',
-  });
-  res.status(201).json({ success: true, data: delivery });
+  const { pickup, drop, loadType, user, fare } = req.body;
+  const porter = await PorterOrder.create({ pickup, drop, loadType, user, fare, mode: 'bike' });
+  res.status(201).json({ success: true, porter });
+});
+
+// Get all bookings by user
+export const getAllBikeBookings = asyncHandler(async (req, res) => {
+  const bookings = await BikeBooking.find({ user: req.user._id });
+  res.json(bookings);
+});
+
+// Get specific booking
+export const getBikeBookingById = asyncHandler(async (req, res) => {
+  const booking = await BikeBooking.findById(req.params.id);
+  if (!booking) throw new Error('Booking not found');
+  res.json(booking);
 });
