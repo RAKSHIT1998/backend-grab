@@ -10,7 +10,7 @@ const JWT_SECRET = process.env.JWT_SECRET || '#479@/^5149*@123';
 
 // Generic token verification
 const verifyToken = (req, res, next) => {
-  const token = req.headers.authorization?.split(' ')[1];
+  let token = req.headers.authorization?.split(' ')[1];
   if (!token) return res.status(401).json({ message: 'No token provided' });
 
   try {
@@ -22,8 +22,8 @@ const verifyToken = (req, res, next) => {
   }
 };
 
-// Middleware: Regular user
-const protect = async (req, res, next) => {
+// User Auth Middleware
+export const protectUser = async (req, res, next) => {
   verifyToken(req, res, async () => {
     const user = await User.findById(req.user.id);
     if (!user) return res.status(404).json({ message: 'User not found' });
@@ -32,8 +32,8 @@ const protect = async (req, res, next) => {
   });
 };
 
-// Middleware: Driver
-const isDriver = async (req, res, next) => {
+// Driver Auth Middleware
+export const protectDriver = async (req, res, next) => {
   verifyToken(req, res, async () => {
     const driver = await Driver.findById(req.user.id);
     if (!driver) return res.status(404).json({ message: 'Driver not found' });
@@ -42,30 +42,18 @@ const isDriver = async (req, res, next) => {
   });
 };
 
-// Middleware: Admin
-const isAdmin = async (req, res, next) => {
+// Restaurant Auth Middleware
+export const protectRestaurant = async (req, res, next) => {
   verifyToken(req, res, async () => {
-    const user = await User.findById(req.user.id);
-    if (!user || user.role !== 'admin') {
-      return res.status(403).json({ message: 'Admin access only' });
-    }
-    req.admin = user;
+    const restaurant = await Restaurant.findById(req.user.id);
+    if (!restaurant) return res.status(404).json({ message: 'Restaurant not found' });
+    req.restaurant = restaurant;
     next();
   });
 };
 
-// Middleware: Restaurant
-const isRestaurant = async (req, res, next) => {
-  verifyToken(req, res, async () => {
-    const rest = await Restaurant.findById(req.user.id);
-    if (!rest) return res.status(404).json({ message: 'Restaurant not found' });
-    req.restaurant = rest;
-    next();
-  });
-};
-
-// Middleware: Mart
-const isMart = async (req, res, next) => {
+// Mart Partner Auth Middleware
+export const protectMart = async (req, res, next) => {
   verifyToken(req, res, async () => {
     const mart = await Mart.findById(req.user.id);
     if (!mart) return res.status(404).json({ message: 'Mart partner not found' });
@@ -74,8 +62,8 @@ const isMart = async (req, res, next) => {
   });
 };
 
-// Middleware: Porter
-const isPorter = async (req, res, next) => {
+// Porter Partner Auth Middleware
+export const protectPorter = async (req, res, next) => {
   verifyToken(req, res, async () => {
     const porter = await Porter.findById(req.user.id);
     if (!porter) return res.status(404).json({ message: 'Porter not found' });
@@ -84,37 +72,14 @@ const isPorter = async (req, res, next) => {
   });
 };
 
-// Middleware: Biker (subset of drivers)
-const isBiker = async (req, res, next) => {
+// Admin-only middleware
+export const protectAdmin = async (req, res, next) => {
   verifyToken(req, res, async () => {
-    const driver = await Driver.findById(req.user.id);
-    if (!driver || driver.role !== 'biker') {
-      return res.status(403).json({ message: 'Only bikers allowed' });
+    const user = await User.findById(req.user.id);
+    if (!user || user.role !== 'admin') {
+      return res.status(403).json({ message: 'Admin access only' });
     }
-    req.driver = driver;
+    req.admin = user;
     next();
   });
-};
-
-// Middleware: Taxi driver
-const isTaxi = async (req, res, next) => {
-  verifyToken(req, res, async () => {
-    const driver = await Driver.findById(req.user.id);
-    if (!driver || driver.role !== 'taxi') {
-      return res.status(403).json({ message: 'Only taxi drivers allowed' });
-    }
-    req.driver = driver;
-    next();
-  });
-};
-
-export {
-  protect,
-  isDriver,
-  isAdmin,
-  isRestaurant,
-  isMart,
-  isPorter,
-  isBiker,
-  isTaxi,
 };
