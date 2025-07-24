@@ -8,7 +8,6 @@ import {
   updateDriverProfile,
   toggleDriverAvailability,
   getAllDrivers,
-  deleteDriver,
 } from '../controllers/driverController.js';
 
 import { protect, isDriver, isAdmin } from '../middleware/authMiddleware.js';
