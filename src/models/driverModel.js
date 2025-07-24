@@ -44,10 +44,31 @@ const driverSchema = new mongoose.Schema(
     location: {
       lat: Number,
       lng: Number,
+      updatedAt: { type: Date },
+    },
+    wallet: {
+      balance: { type: Number, default: 0 },
+      lastUpdated: { type: Date },
+    },
+    earnings: {
+      total: { type: Number, default: 0 },
+      today: { type: Number, default: 0 },
+      lastUpdated: { type: Date },
     },
   },
   { timestamps: true }
 );
+
+// Virtual to calculate average rating
+
+driverSchema.virtual('averageRating').get(function () {
+  if (!this.ratings.length) return 0;
+  const total = this.ratings.reduce((sum, r) => sum + r.stars, 0);
+  return (total / this.ratings.length).toFixed(1);
+});
+
+driverSchema.set('toObject', { virtuals: true });
+driverSchema.set('toJSON', { virtuals: true });
 
 const Driver = mongoose.model('Driver', driverSchema);
 export default Driver;
