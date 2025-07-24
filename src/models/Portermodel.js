@@ -3,17 +3,35 @@ import mongoose from 'mongoose';
 
 const porterSchema = new mongoose.Schema(
   {
-    name: { type: String, required: true },
-    phone: { type: String, required: true, unique: true },
-    password: { type: String, required: true },
-    vehicleType: {
+    name: {
       type: String,
-      enum: ['bike', 'porter'],
       required: true,
     },
-    vehicleNumber: { type: String, required: true },
-    isApproved: { type: Boolean, default: false },
-    isActive: { type: Boolean, default: false },
+    phone: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+    password: {
+      type: String,
+      required: true,
+    },
+    isApproved: {
+      type: Boolean,
+      default: false,
+    },
+    isActive: {
+      type: Boolean,
+      default: false,
+    },
+    vehicleNumber: {
+      type: String,
+      required: true,
+    },
+    location: {
+      lat: Number,
+      lng: Number,
+    },
     ratings: [
       {
         user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
@@ -22,10 +40,6 @@ const porterSchema = new mongoose.Schema(
         createdAt: { type: Date, default: Date.now },
       },
     ],
-    location: {
-      lat: Number,
-      lng: Number,
-    },
   },
   { timestamps: true }
 );
