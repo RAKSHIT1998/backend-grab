@@ -43,6 +43,7 @@ import adminRouter from './src/routes/adminRoutes.js';
 import ratingRouter from './src/routes/ratingRoutes.js';
 import fareRouter from './src/routes/fareRoutes.js';
 import notificationRouter from './src/routes/notificationRoutes.js';
+import { User } from '../models/userModel.js';
 
 // Bind Routes
 app.use('/api/users', userRouter);
