@@ -4,82 +4,89 @@ import asyncHandler from 'express-async-handler';
 import User from '../models/userModel.js';
 import Driver from '../models/driverModel.js';
 import Restaurant from '../models/restaurantModel.js';
+import Mart from '../models/martModel.js';
+import Porter from '../models/porterModel.js';
+import Bike from '../models/bikeModel.js';
+import Taxi from '../models/taxiModel.js';
+import Admin from '../models/adminModel.js';
 
-// Middleware to protect user routes
-export const protectUser = asyncHandler(async (req, res, next) => {
+const secret = process.env.JWT_SECRET || '#479@/^5149*@123';
+
+// Generic token verifier
+const verifyToken = async (req, model) => {
   let token;
-
-  if (req.headers.authorization?.startsWith('Bearer')) {
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith('Bearer')
+  ) {
     token = req.headers.authorization.split(' ')[1];
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'defaultsecret');
-
-    const user = await User.findById(decoded.id).select('-password');
-    if (!user) {
-      res.status(401);
-      throw new Error('Not authorized, user not found');
-    }
-
-    req.user = user;
-    next();
-  } else {
-    res.status(401);
-    throw new Error('Not authorized, no token');
+    const decoded = jwt.verify(token, secret);
+    const user = await model.findById(decoded.id).select('-password');
+    if (!user) throw new Error('User not found');
+    return user;
   }
+  throw new Error('Not authorized, no token');
+};
+
+// Middlewares
+const protectUser = asyncHandler(async (req, res, next) => {
+  req.user = await verifyToken(req, User);
+  next();
 });
 
-// Middleware to protect driver routes
-export const protectDriver = asyncHandler(async (req, res, next) => {
-  let token;
-
-  if (req.headers.authorization?.startsWith('Bearer')) {
-    token = req.headers.authorization.split(' ')[1];
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'defaultsecret');
-
-    const driver = await Driver.findById(decoded.id).select('-password');
-    if (!driver) {
-      res.status(401);
-      throw new Error('Not authorized, driver not found');
-    }
-
-    req.driver = driver;
-    next();
-  } else {
-    res.status(401);
-    throw new Error('Not authorized, no token');
-  }
+const protectDriver = asyncHandler(async (req, res, next) => {
+  req.user = await verifyToken(req, Driver);
+  next();
 });
 
-// Middleware to protect restaurant routes
-export const protectRestaurant = asyncHandler(async (req, res, next) => {
-  let token;
-
-  if (req.headers.authorization?.startsWith('Bearer')) {
-    token = req.headers.authorization.split(' ')[1];
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'defaultsecret');
-
-    const restaurant = await Restaurant.findById(decoded.id).select('-password');
-    if (!restaurant) {
-      res.status(401);
-      throw new Error('Not authorized, restaurant not found');
-    }
-
-    req.restaurant = restaurant;
-    next();
-  } else {
-    res.status(401);
-    throw new Error('Not authorized, no token');
-  }
+const protectRestaurant = asyncHandler(async (req, res, next) => {
+  req.user = await verifyToken(req, Restaurant);
+  next();
 });
 
-// Admin guard middleware
-export const adminOnly = (req, res, next) => {
+const protectMart = asyncHandler(async (req, res, next) => {
+  req.user = await verifyToken(req, Mart);
+  next();
+});
+
+const protectPorter = asyncHandler(async (req, res, next) => {
+  req.user = await verifyToken(req, Porter);
+  next();
+});
+
+const protectBike = asyncHandler(async (req, res, next) => {
+  req.user = await verifyToken(req, Bike);
+  next();
+});
+
+const protectTaxi = asyncHandler(async (req, res, next) => {
+  req.user = await verifyToken(req, Taxi);
+  next();
+});
+
+const protectAdmin = asyncHandler(async (req, res, next) => {
+  req.user = await verifyToken(req, Admin);
+  next();
+});
+
+// Admin role check
+const isAdmin = (req, res, next) => {
   if (req.user && req.user.role === 'admin') {
     next();
   } else {
     res.status(403);
-    throw new Error('Admin access required');
+    throw new Error('Admin access denied');
   }
+};
+
+export {
+  protectUser,
+  protectDriver,
+  protectRestaurant,
+  protectMart,
+  protectPorter,
+  protectBike,
+  protectTaxi,
+  protectAdmin,
+  isAdmin
 };
