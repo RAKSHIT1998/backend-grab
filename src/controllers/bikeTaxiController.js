@@ -1,57 +1,57 @@
-// src/controllers/bikeTaxiController.js
 import BikeTaxi from '../models/bikeTaxiModel.js';
 import asyncHandler from 'express-async-handler';
 
-// @desc    Create new bike taxi order
+// @desc    Register new bike taxi
 // @route   POST /api/bike
-// @access  Protected
-export const createBikeTaxiOrder = asyncHandler(async (req, res) => {
-  const { pickup, drop, distance, fare, paymentMode, notes } = req.body;
-  const user = req.user._id;
+export const registerBikeTaxi = asyncHandler(async (req, res) => {
+  const { userId, vehicleNumber, licenseImage, rcImage } = req.body;
 
-  const order = await BikeTaxi.create({
-    user,
-    pickup,
-    drop,
-    distance,
-    fare,
-    paymentMode,
-    notes,
+  const newBike = new BikeTaxi({
+    userId,
+    vehicleNumber,
+    licenseImage,
+    rcImage,
     status: 'pending',
+    isAvailable: false
   });
 
-  res.status(201).json(order);
+  const saved = await newBike.save();
+  res.status(201).json(saved);
 });
 
-// @desc    Get user bike taxi orders
-// @route   GET /api/bike
-// @access  Protected
-export const getUserBikeTaxiOrders = asyncHandler(async (req, res) => {
-  const orders = await BikeTaxi.find({ user: req.user._id }).sort({ createdAt: -1 });
-  res.json(orders);
+// @desc    Get all available bike taxis
+// @route   GET /api/bike/available
+export const getAvailableBikeTaxis = asyncHandler(async (req, res) => {
+  const bikes = await BikeTaxi.find({ isAvailable: true, status: 'approved' });
+  res.json(bikes);
 });
 
-// @desc    Get all bike taxi orders (Admin)
-// @route   GET /api/admin/bike
-// @access  Admin
-export const getAllBikeTaxiOrders = asyncHandler(async (req, res) => {
-  const orders = await BikeTaxi.find().populate('user', 'name email');
-  res.json(orders);
-});
-
-// @desc    Update bike taxi order status
-// @route   PUT /api/bike/:id/status
-// @access  Protected (Driver/Admin)
+// @desc    Approve or reject bike taxi
+// @route   PUT /api/admin/bike/:id/status
 export const updateBikeTaxiStatus = asyncHandler(async (req, res) => {
-  const order = await BikeTaxi.findById(req.params.id);
+  const { status } = req.body;
+  const bike = await BikeTaxi.findById(req.params.id);
 
-  if (!order) {
+  if (!bike) {
     res.status(404);
-    throw new Error('Order not found');
+    throw new Error('Bike taxi not found');
   }
 
-  order.status = req.body.status || order.status;
+  bike.status = status;
+  await bike.save();
+  res.json({ message: `Bike taxi ${status}` });
+});
 
-  const updatedOrder = await order.save();
-  res.json(updatedOrder);
+// @desc    Toggle availability
+// @route   PUT /api/bike/:id/availability
+export const toggleBikeAvailability = asyncHandler(async (req, res) => {
+  const bike = await BikeTaxi.findById(req.params.id);
+  if (!bike) {
+    res.status(404);
+    throw new Error('Bike taxi not found');
+  }
+
+  bike.isAvailable = !bike.isAvailable;
+  await bike.save();
+  res.json({ message: `Availability toggled to ${bike.isAvailable}` });
 });
