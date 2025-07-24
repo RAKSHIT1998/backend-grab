@@ -2,87 +2,84 @@
 import jwt from 'jsonwebtoken';
 import User from '../models/userModel.js';
 import Driver from '../models/driverModel.js';
-import Porter from '../models/porterModel.js';
-import Mart from '../models/martModel.js';
 import Restaurant from '../models/restaurantModel.js';
+import Mart from '../models/martModel.js';
+import Porter from '../models/porterModel.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || '#479@/^5149*@123';
 
-// 🔐 General Token Auth
-export const protect = async (req, res, next) => {
+// Generic token verification
+const verifyToken = (req, res, next) => {
+  let token = req.headers.authorization?.split(' ')[1];
+  if (!token) return res.status(401).json({ message: 'No token provided' });
+
   try {
-    const token = req.headers.authorization?.split(' ')[1];
-    if (!token) throw new Error('No token provided');
     const decoded = jwt.verify(token, JWT_SECRET);
     req.user = decoded;
     next();
   } catch (err) {
-    res.status(401).json({ message: 'Unauthorized', error: err.message });
+    return res.status(401).json({ message: 'Invalid token' });
   }
 };
 
-// 🔐 Admin Auth
-export const protectAdmin = async (req, res, next) => {
-  await protect(req, res, async () => {
+// User Auth Middleware
+export const protectUser = async (req, res, next) => {
+  verifyToken(req, res, async () => {
     const user = await User.findById(req.user.id);
-    if (user?.role === 'admin') return next();
-    res.status(403).json({ message: 'Access denied: Admin only' });
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    req.userDetails = user;
+    next();
   });
 };
 
-// 🔐 Role-Based Protectors
-export const isUser = async (req, res, next) => {
-  await protect(req, res, async () => {
-    const user = await User.findById(req.user.id);
-    if (user?.role === 'user') return next();
-    res.status(403).json({ message: 'Access denied: User only' });
-  });
-};
-
-export const isDriver = async (req, res, next) => {
-  await protect(req, res, async () => {
+// Driver Auth Middleware
+export const protectDriver = async (req, res, next) => {
+  verifyToken(req, res, async () => {
     const driver = await Driver.findById(req.user.id);
-    if (driver) return next();
-    res.status(403).json({ message: 'Access denied: Driver only' });
+    if (!driver) return res.status(404).json({ message: 'Driver not found' });
+    req.driver = driver;
+    next();
   });
 };
 
-export const isBiker = async (req, res, next) => {
-  await protect(req, res, async () => {
-    const driver = await Driver.findById(req.user.id);
-    if (driver?.vehicleType === 'bike') return next();
-    res.status(403).json({ message: 'Access denied: Biker only' });
-  });
-};
-
-export const isTaxiDriver = async (req, res, next) => {
-  await protect(req, res, async () => {
-    const driver = await Driver.findById(req.user.id);
-    if (driver?.vehicleType === 'taxi') return next();
-    res.status(403).json({ message: 'Access denied: Taxi Driver only' });
-  });
-};
-
-export const isPorter = async (req, res, next) => {
-  await protect(req, res, async () => {
-    const porter = await Porter.findById(req.user.id);
-    if (porter) return next();
-    res.status(403).json({ message: 'Access denied: Porter only' });
-  });
-};
-
-export const isRestaurant = async (req, res, next) => {
-  await protect(req, res, async () => {
+// Restaurant Auth Middleware
+export const protectRestaurant = async (req, res, next) => {
+  verifyToken(req, res, async () => {
     const restaurant = await Restaurant.findById(req.user.id);
-    if (restaurant) return next();
-    res.status(403).json({ message: 'Access denied: Restaurant only' });
+    if (!restaurant) return res.status(404).json({ message: 'Restaurant not found' });
+    req.restaurant = restaurant;
+    next();
   });
 };
 
-export const isMart = async (req, res, next) => {
-  await protect(req, res, async () => {
+// Mart Partner Auth Middleware
+export const protectMart = async (req, res, next) => {
+  verifyToken(req, res, async () => {
     const mart = await Mart.findById(req.user.id);
-    if (mart) return next();
-    res.status(403).json({ message: 'Access denied: Mart only' });
+    if (!mart) return res.status(404).json({ message: 'Mart partner not found' });
+    req.mart = mart;
+    next();
+  });
+};
+
+// Porter Partner Auth Middleware
+export const protectPorter = async (req, res, next) => {
+  verifyToken(req, res, async () => {
+    const porter = await Porter.findById(req.user.id);
+    if (!porter) return res.status(404).json({ message: 'Porter not found' });
+    req.porter = porter;
+    next();
+  });
+};
+
+// Admin-only middleware
+export const protectAdmin = async (req, res, next) => {
+  verifyToken(req, res, async () => {
+    const user = await User.findById(req.user.id);
+    if (!user || user.role !== 'admin') {
+      return res.status(403).json({ message: 'Admin access only' });
+    }
+    req.admin = user;
+    next();
   });
 };
