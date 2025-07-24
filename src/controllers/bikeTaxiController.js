@@ -1,57 +1,67 @@
-import BikeTaxi from '../models/bikeTaxiModel.js';
+// src/controllers/bikeController.js
+
 import asyncHandler from 'express-async-handler';
+import Ride from '../models/rideModel.js';
+import Delivery from '../models/deliveryModel.js';
+import User from '../models/userModel.js';
 
-// @desc    Register new bike taxi
-// @route   POST /api/bike
-export const registerBikeTaxi = asyncHandler(async (req, res) => {
-  const { userId, vehicleNumber, licenseImage, rcImage } = req.body;
-
-  const newBike = new BikeTaxi({
-    userId,
-    vehicleNumber,
-    licenseImage,
-    rcImage,
+// POST /bike-taxi/ride
+export const createBikeTaxiRide = asyncHandler(async (req, res) => {
+  const { userId, pickupLocation, dropoffLocation, fareEstimate } = req.body;
+  const ride = await Ride.create({
+    type: 'bike-taxi',
+    user: userId,
+    pickupLocation,
+    dropoffLocation,
+    fare: fareEstimate,
     status: 'pending',
-    isAvailable: false
   });
-
-  const saved = await newBike.save();
-  res.status(201).json(saved);
+  res.status(201).json({ success: true, data: ride });
 });
 
-// @desc    Get all available bike taxis
-// @route   GET /api/bike/available
-export const getAvailableBikeTaxis = asyncHandler(async (req, res) => {
-  const bikes = await BikeTaxi.find({ isAvailable: true, status: 'approved' });
-  res.json(bikes);
+// POST /bike-delivery/food
+export const createFoodDelivery = asyncHandler(async (req, res) => {
+  const { userId, restaurantId, items, pickupLocation, dropoffLocation, totalPrice } = req.body;
+  const delivery = await Delivery.create({
+    type: 'food',
+    user: userId,
+    partner: restaurantId,
+    items,
+    pickupLocation,
+    dropoffLocation,
+    fare: totalPrice,
+    status: 'pending',
+  });
+  res.status(201).json({ success: true, data: delivery });
 });
 
-// @desc    Approve or reject bike taxi
-// @route   PUT /api/admin/bike/:id/status
-export const updateBikeTaxiStatus = asyncHandler(async (req, res) => {
-  const { status } = req.body;
-  const bike = await BikeTaxi.findById(req.params.id);
-
-  if (!bike) {
-    res.status(404);
-    throw new Error('Bike taxi not found');
-  }
-
-  bike.status = status;
-  await bike.save();
-  res.json({ message: `Bike taxi ${status}` });
+// POST /bike-delivery/mart
+export const createMartDelivery = asyncHandler(async (req, res) => {
+  const { userId, storeId, items, pickupLocation, dropoffLocation, totalPrice } = req.body;
+  const delivery = await Delivery.create({
+    type: 'mart',
+    user: userId,
+    partner: storeId,
+    items,
+    pickupLocation,
+    dropoffLocation,
+    fare: totalPrice,
+    status: 'pending',
+  });
+  res.status(201).json({ success: true, data: delivery });
 });
 
-// @desc    Toggle availability
-// @route   PUT /api/bike/:id/availability
-export const toggleBikeAvailability = asyncHandler(async (req, res) => {
-  const bike = await BikeTaxi.findById(req.params.id);
-  if (!bike) {
-    res.status(404);
-    throw new Error('Bike taxi not found');
-  }
-
-  bike.isAvailable = !bike.isAvailable;
-  await bike.save();
-  res.json({ message: `Availability toggled to ${bike.isAvailable}` });
+// POST /bike-delivery/porter
+export const createPorterDelivery = asyncHandler(async (req, res) => {
+  const { userId, parcelDetails, pickupLocation, dropoffLocation, fareEstimate } = req.body;
+  const delivery = await Delivery.create({
+    type: 'porter',
+    user: userId,
+    parcelDetails,
+    pickupLocation,
+    dropoffLocation,
+    fare: fareEstimate,
+    status: 'pending',
+  });
+  res.status(201).json({ success: true, data: delivery });
 });
