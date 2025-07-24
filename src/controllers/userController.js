@@ -1,30 +1,38 @@
 // src/controllers/userController.js
 import User from '../models/userModel.js';
 import generateToken from '../utils/generateToken.js';
+import sendEmail from '../utils/sendEmail.js';
 import asyncHandler from 'express-async-handler';
-import sendOTP from '../utils/sendOTP.js';
+import bcrypt from 'bcryptjs';
 
-// @desc    Register a new user
+// @desc    Register new user
 // @route   POST /api/users/register
 export const registerUser = asyncHandler(async (req, res) => {
   const { name, email, phone, password, role } = req.body;
-  const existingUser = await User.findOne({ phone });
 
-  if (existingUser) {
+  const userExists = await User.findOne({ $or: [{ email }, { phone }] });
+  if (userExists) {
     res.status(400);
     throw new Error('User already exists');
   }
 
-  const user = await User.create({ name, email, phone, password, role });
+  const user = await User.create({
+    name,
+    email,
+    phone,
+    password,
+    role,
+  });
 
   if (user) {
+    generateToken(res, user._id);
     res.status(201).json({
       _id: user._id,
       name: user.name,
-      phone: user.phone,
       email: user.email,
+      phone: user.phone,
       role: user.role,
-      token: generateToken(user._id),
+      isVerified: user.isVerified,
     });
   } else {
     res.status(400);
@@ -32,25 +40,36 @@ export const registerUser = asyncHandler(async (req, res) => {
   }
 });
 
-// @desc    Login user
+// @desc    Auth user & get token
 // @route   POST /api/users/login
-export const loginUser = asyncHandler(async (req, res) => {
-  const { phone, password } = req.body;
-  const user = await User.findOne({ phone });
+export const authUser = asyncHandler(async (req, res) => {
+  const { emailOrPhone, password } = req.body;
 
-  if (user && (await user.matchPassword(password))) {
+  const user = await User.findOne({
+    $or: [{ email: emailOrPhone }, { phone: emailOrPhone }],
+  });
+
+  if (user && (await bcrypt.compare(password, user.password))) {
+    generateToken(res, user._id);
     res.json({
       _id: user._id,
       name: user.name,
-      phone: user.phone,
       email: user.email,
+      phone: user.phone,
       role: user.role,
-      token: generateToken(user._id),
+      isVerified: user.isVerified,
     });
   } else {
     res.status(401);
     throw new Error('Invalid credentials');
   }
+});
+
+// @desc    Logout user
+// @route   POST /api/users/logout
+export const logoutUser = asyncHandler(async (req, res) => {
+  res.clearCookie('jwt');
+  res.status(200).json({ message: 'Logged out successfully' });
 });
 
 // @desc    Get user profile
@@ -80,14 +99,13 @@ export const updateUserProfile = asyncHandler(async (req, res) => {
     }
 
     const updatedUser = await user.save();
-
     res.json({
       _id: updatedUser._id,
       name: updatedUser.name,
-      phone: updatedUser.phone,
       email: updatedUser.email,
+      phone: updatedUser.phone,
       role: updatedUser.role,
-      token: generateToken(updatedUser._id),
+      isVerified: updatedUser.isVerified,
     });
   } else {
     res.status(404);
@@ -95,12 +113,37 @@ export const updateUserProfile = asyncHandler(async (req, res) => {
   }
 });
 
-// @desc    Send OTP for verification
+// @desc    Verify email with OTP
+// @route   POST /api/users/verify
+export const verifyUser = asyncHandler(async (req, res) => {
+  const { email, otp } = req.body;
+  const user = await User.findOne({ email });
+
+  if (user && user.otp === otp) {
+    user.isVerified = true;
+    user.otp = null;
+    await user.save();
+    res.json({ message: 'Email verified' });
+  } else {
+    res.status(400);
+    throw new Error('Invalid OTP');
+  }
+});
+
+// @desc    Send OTP
 // @route   POST /api/users/send-otp
 export const sendOtp = asyncHandler(async (req, res) => {
-  const { phone } = req.body;
+  const { email } = req.body;
   const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  const user = await User.findOne({ email });
 
-  await sendOTP(phone, otp); // Implement sendOTP helper using Twilio or similar
-  res.json({ success: true, otp }); // In production, don't return OTP
+  if (!user) {
+    res.status(404);
+    throw new Error('User not found');
+  }
+
+  user.otp = otp;
+  await user.save();
+  await sendEmail(email, 'Your OTP Code', `Your OTP code is ${otp}`);
+  res.json({ message: 'OTP sent to email' });
 });
