@@ -1,9 +1,26 @@
-const mongoose = require('mongoose');
-const martItemSchema = new mongoose.Schema({
-  name: String, price: Number, stock: Number, image: String, description: String, category: String
-});
-const martSchema = new mongoose.Schema({
-  name: String, owner: String, phone: String, email: String, address: String,
-  items: [martItemSchema], discounts: [String], ads: [String], rating: Number, createdAt: { type: Date, default: Date.now }
-});
-module.exports = mongoose.model("Mart", martSchema);
+// src/models/martModel.js
+import mongoose from 'mongoose';
+
+const martProductSchema = new mongoose.Schema(
+  {
+    name: { type: String, required: true },
+    image: { type: String },
+    price: { type: Number, required: true },
+    category: { type: String },
+    description: { type: String },
+    stock: { type: Number, default: 0 },
+    ratings: [
+      {
+        user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+        stars: { type: Number, required: true },
+        comment: { type: String },
+        createdAt: { type: Date, default: Date.now },
+      },
+    ],
+    createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'MartPartner' },
+  },
+  { timestamps: true }
+);
+
+const MartProduct = mongoose.model('MartProduct', martProductSchema);
+export default MartProduct;
