@@ -40,7 +40,7 @@ import walletRouter from './src/routes/walletRoutes.js';
 import paymentRouter from './src/routes/paymentRoutes.js';
 import adminRouter from './src/routes/adminRoutes.js';
 import fareRouter from './src/routes/fareRoutes.js';
-
+import notificationRoutes from './src/routes/notificationRoutes.js';
 // Use Routes
 app.use('/api/users', userRouter);
 app.use('/api/drivers', driverRouter);
@@ -54,7 +54,7 @@ app.use('/api/wallet', walletRouter);
 app.use('/api/payment', paymentRouter);
 app.use('/api/admin', adminRouter);
 app.use('/api/fare', fareRouter);
-
+app.use('/api/notifications', notificationRoutes)
 // Root health check
 app.get('/', (req, res) => {
   res.send('🚀 Grap SuperApp API is running');
