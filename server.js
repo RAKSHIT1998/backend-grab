@@ -22,13 +22,13 @@ app.use(express.json());
 app.use(cors());
 app.use('/uploads', express.static('uploads'));
 
-// Connect MongoDB
+// Connect to MongoDB
 const MONGO_URI =
   process.env.MONGO_URI ||
   'mongodb+srv://rakshit98:AdminRakshit@cluster0.n1m4mu0.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
 connectDB(MONGO_URI);
 
-// Routes
+// Import all routers
 import userRouter from './src/routes/userRoutes.js';
 import driverRouter from './src/routes/driverRoutes.js';
 import restaurantRouter from './src/routes/restaurantRoutes.js';
@@ -43,9 +43,8 @@ import adminRouter from './src/routes/adminRoutes.js';
 import ratingRouter from './src/routes/ratingRoutes.js';
 import fareRouter from './src/routes/fareRoutes.js';
 import notificationRouter from './src/routes/notificationRoutes.js';
-import { User } from '../models/userModel.js';
 
-// Bind Routes
+// Mount API routes
 app.use('/api/users', userRouter);
 app.use('/api/drivers', driverRouter);
 app.use('/api/restaurants', restaurantRouter);
@@ -61,7 +60,7 @@ app.use('/api/ratings', ratingRouter);
 app.use('/api/fare', fareRouter);
 app.use('/api/notifications', notificationRouter);
 
-// Error Middleware
+// Global error handler
 app.use(errorHandler);
 
 // Start server
