@@ -1,43 +1,71 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
-const dotenv = require('dotenv');
+// server.js
+import express from 'express';
+import dotenv from 'dotenv';
+import morgan from 'morgan';
+import helmet from 'helmet';
+import cors from 'cors';
+import compression from 'compression';
+import connectDB from './src/config/db.js';
+import { notFound, errorHandler } from './src/middleware/errorMiddleware.js';
 
 // Load environment variables
 dotenv.config();
 
+// Connect to MongoDB
+connectDB();
+
+// Initialize app
 const app = express();
 
-// Middleware
-app.use(express.json());
+// Middlewares
+app.use(helmet());
 app.use(cors());
-app.use('/uploads', express.static('uploads'));
-
-// MongoDB connection
-const mongoURI = process.env.MONGO_URI;
-if (!mongoURI) {
-  console.error('❌ MONGO_URI not defined in environment');
-  process.exit(1);
+app.use(compression());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+if (process.env.NODE_ENV !== 'production') {
+  app.use(morgan('dev'));
 }
 
-mongoose.connect(mongoURI)
-  .then(() => console.log('✅ Connected to MongoDB'))
-  .catch((err) => {
-    console.error('❌ MongoDB connection error:', err);
-    process.exit(1);
-  });
+// ROUTES
+import userRouter from './src/routes/userRoutes.js';
+import driverRouter from './src/routes/driverRoutes.js';
+import restaurantRouter from './src/routes/restaurantRoutes.js';
+import martRouter from './src/routes/martRoutes.js';
+import porterRouter from './src/routes/porterRoutes.js';
+import bikeRouter from './src/routes/bikeRoutes.js';
+import taxiRouter from './src/routes/taxiRoutes.js';
+import adminTaxiRoutes from './src/routes/adminTaxiRoutes.js';
+import walletRouter from './src/routes/walletRoutes.js';
+import paymentRouter from './src/routes/paymentRoutes.js';
+import adminRouter from './src/routes/adminRoutes.js';
+import fareRouter from './src/routes/fareRoutes.js';
 
-// Routes
-app.use('/api/auth', require('./routes/auth'));
-app.use('/api/restaurants', require('./routes/restaurants'));
-app.use('/api/mart', require('./routes/mart'));
-app.use('/api/rides', require('./routes/rides'));
-app.use('/api/orders', require('./routes/orders'));
-app.use('/api/reviews', require('./routes/reviews'));
-app.use('/api/payments', require('./routes/payments'));
-app.use('/api/admin', require('./routes/admin'));
+// Use Routes
+app.use('/api/users', userRouter);
+app.use('/api/drivers', driverRouter);
+app.use('/api/restaurants', restaurantRouter);
+app.use('/api/mart', martRouter);
+app.use('/api/porter', porterRouter);
+app.use('/api/bike', bikeRouter);
+app.use('/api/taxi', taxiRouter);
+app.use('/api/admin/taxi', adminTaxiRoutes);
+app.use('/api/wallet', walletRouter);
+app.use('/api/payment', paymentRouter);
+app.use('/api/admin', adminRouter);
+app.use('/api/fare', fareRouter);
 
-// Use only process.env.PORT (no fallback)
-app.listen(process.env.PORT, () => {
-  console.log(`🚀 API running on port ${process.env.PORT}`);
+// Root health check
+app.get('/', (req, res) => {
+  res.send('🚀 Grap SuperApp API is running');
+});
+
+// Error Handlers
+app.use(notFound);
+app.use(errorHandler);
+
+// Start Server
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`✅ Server running on port ${PORT}`);
 });
