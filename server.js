@@ -1,73 +1,70 @@
 // server.js
 import express from 'express';
-import dotenv from 'dotenv';
 import http from 'http';
-import { Server } from 'socket.io';
 import cors from 'cors';
-import helmet from 'helmet';
-import compression from 'compression';
-import morgan from 'morgan';
-import connectDB from './config/db.js';
-import { configureSocket } from './socket.js';
-import { notFound, errorHandler } from './middleware/errorMiddleware.js';
+import dotenv from 'dotenv';
+import { initSocketServer } from './src/socket/socket.js';
+import connectDB from './src/configs/mongoose.js';
+import errorHandler from './src/middleware/errorMiddleware.js';
 
-// Import all routers
-import userRoutes from './routes/userRoutes.js';
-import driverRoutes from './routes/driverRoutes.js';
-import restaurantRoutes from './routes/restaurantRoutes.js';
-import adminRoutes from './routes/adminRoutes.js';
-import martRoutes from './routes/martRoutes.js';
-import partnerRoutes from './routes/partnerRoutes.js';
-import orderRoutes from './routes/orderRoutes.js';
-import ratingRoutes from './routes/ratingRoutes.js';
-import paymentRoutes from './routes/paymentRoutes.js';
-import walletRoutes from './routes/walletRoutes.js';
-import taxiRoutes from './routes/taxiRoutes.js';
-import bikeRoutes from './routes/bikeRoutes.js';
-import porterRoutes from './routes/porterRoutes.js';
-
+// Load environment variables
 dotenv.config();
-connectDB();
 
+// Initialize express app and HTTP server
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server, {
-  cors: {
-    origin: '*',
-    methods: ['GET', 'POST'],
-  },
-});
 
-// Socket configuration
-configureSocket(io);
+// Initialize Socket.IO
+initSocketServer(server);
 
-app.use(cors());
+// Middleware
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(helmet());
-app.use(compression());
-app.use(morgan('dev'));
+app.use(cors());
+app.use('/uploads', express.static('uploads'));
+
+// Connect MongoDB
+const MONGO_URI =
+  process.env.MONGO_URI ||
+  'mongodb+srv://rakshit98:AdminRakshit@cluster0.n1m4mu0.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
+connectDB(MONGO_URI);
 
 // Routes
-app.use('/api/users', userRoutes);
-app.use('/api/drivers', driverRoutes);
-app.use('/api/restaurants', restaurantRoutes);
-app.use('/api/admin', adminRoutes);
-app.use('/api/mart', martRoutes);
-app.use('/api/partners', partnerRoutes);
-app.use('/api/orders', orderRoutes);
-app.use('/api/ratings', ratingRoutes);
-app.use('/api/payments', paymentRoutes);
-app.use('/api/wallet', walletRoutes);
-app.use('/api/taxi', taxiRoutes);
-app.use('/api/bike', bikeRoutes);
-app.use('/api/porter', porterRoutes);
+import userRouter from './src/routes/userRoutes.js';
+import driverRouter from './src/routes/driverRoutes.js';
+import restaurantRouter from './src/routes/restaurantRoutes.js';
+import martRouter from './src/routes/martRoutes.js';
+import porterRouter from './src/routes/porterRoutes.js';
+import bikeRouter from './src/routes/bikeRoutes.js';
+import taxiRouter from './src/routes/taxiRoutes.js';
+import adminTaxiRoutes from './src/routes/adminTaxiRoutes.js';
+import walletRouter from './src/routes/walletRoutes.js';
+import paymentRouter from './src/routes/paymentRoutes.js';
+import adminRouter from './src/routes/adminRoutes.js';
+import ratingRouter from './src/routes/ratingRoutes.js';
+import fareRouter from './src/routes/fareRoutes.js';
+import notificationRouter from './src/routes/notificationRoutes.js';
 
-// Error handlers
-app.use(notFound);
+// Bind Routes
+app.use('/api/users', userRouter);
+app.use('/api/drivers', driverRouter);
+app.use('/api/restaurants', restaurantRouter);
+app.use('/api/mart', martRouter);
+app.use('/api/porter', porterRouter);
+app.use('/api/bike', bikeRouter);
+app.use('/api/taxi', taxiRouter);
+app.use('/api/admin/taxi', adminTaxiRoutes);
+app.use('/api/wallet', walletRouter);
+app.use('/api/payments', paymentRouter);
+app.use('/api/admin', adminRouter);
+app.use('/api/ratings', ratingRouter);
+app.use('/api/fare', fareRouter);
+app.use('/api/notifications', notificationRouter);
+
+// Error Middleware
 app.use(errorHandler);
 
+// Start server
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`🚀 Server running at http://localhost:${PORT}`);
 });
