@@ -1,17 +1,17 @@
+// src/utils/generateToken.js
 import jwt from 'jsonwebtoken';
 
-export const generateToken = (user, expiresIn = "7d") => {
+const generateToken = (user) => {
   return jwt.sign(
     {
-      _id: user._id,
-      role: user.role,
-      name: user.name,
-      email: user.email || null,
-      phone: user.phone || null,
+      id: user._id,
+      role: user.role, // optional
     },
-    process.env.JWT_SECRET || "defaultsecret",
+    process.env.JWT_SECRET || '#479@/^5149*@123',
     {
-      expiresIn,
+      expiresIn: '30d',
     }
   );
 };
+
+export default generateToken;
