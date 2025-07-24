@@ -1,20 +1,13 @@
-// src/controllers/driverController.js
-
 import Driver from '../models/driverModel.js';
-import asyncHandler from 'express-async-handler';
 import generateToken from '../utils/generateToken.js';
 
-// @desc    Register new driver
-// @route   POST /api/drivers/register
-// @access  Public
-export const registerDriver = asyncHandler(async (req, res) => {
+// Register a new driver
+export const registerDriver = async (req, res) => {
   const { name, email, phone, password, vehicleType, licenseNumber } = req.body;
 
   const driverExists = await Driver.findOne({ email });
-
   if (driverExists) {
-    res.status(400);
-    throw new Error('Driver already exists');
+    return res.status(400).json({ message: 'Driver already exists' });
   }
 
   const driver = await Driver.create({
@@ -31,20 +24,15 @@ export const registerDriver = asyncHandler(async (req, res) => {
       _id: driver._id,
       name: driver.name,
       email: driver.email,
-      phone: driver.phone,
-      role: 'driver',
-      token: generateToken(driver._id, 'driver'),
+      token: generateToken(driver._id),
     });
   } else {
-    res.status(400);
-    throw new Error('Invalid driver data');
+    res.status(400).json({ message: 'Invalid driver data' });
   }
-});
+};
 
-// @desc    Auth driver & get token
-// @route   POST /api/drivers/login
-// @access  Public
-export const authDriver = asyncHandler(async (req, res) => {
+// Login driver
+export const loginDriver = async (req, res) => {
   const { email, password } = req.body;
 
   const driver = await Driver.findOne({ email });
@@ -54,96 +42,57 @@ export const authDriver = asyncHandler(async (req, res) => {
       _id: driver._id,
       name: driver.name,
       email: driver.email,
-      phone: driver.phone,
-      role: 'driver',
-      token: generateToken(driver._id, 'driver'),
+      token: generateToken(driver._id),
     });
   } else {
-    res.status(401);
-    throw new Error('Invalid email or password');
+    res.status(401).json({ message: 'Invalid email or password' });
   }
-});
+};
 
-// @desc    Get driver profile
-// @route   GET /api/drivers/profile
-// @access  Private
-export const getDriverProfile = asyncHandler(async (req, res) => {
+// Get driver profile
+export const getDriverProfile = async (req, res) => {
   const driver = await Driver.findById(req.driver._id).select('-password');
 
   if (driver) {
     res.json(driver);
   } else {
-    res.status(404);
-    throw new Error('Driver not found');
+    res.status(404).json({ message: 'Driver not found' });
   }
-});
+};
 
-// @desc    Update driver profile
-// @route   PUT /api/drivers/profile
-// @access  Private
-export const updateDriverProfile = asyncHandler(async (req, res) => {
+// Update availability
+export const toggleDriverAvailability = async (req, res) => {
   const driver = await Driver.findById(req.driver._id);
-
-  if (driver) {
-    driver.name = req.body.name || driver.name;
-    driver.phone = req.body.phone || driver.phone;
-    driver.vehicleType = req.body.vehicleType || driver.vehicleType;
-    driver.licenseNumber = req.body.licenseNumber || driver.licenseNumber;
-
-    if (req.body.password) {
-      driver.password = req.body.password;
-    }
-
-    const updatedDriver = await driver.save();
-
-    res.json({
-      _id: updatedDriver._id,
-      name: updatedDriver.name,
-      email: updatedDriver.email,
-      phone: updatedDriver.phone,
-      role: 'driver',
-      token: generateToken(updatedDriver._id, 'driver'),
-    });
-  } else {
-    res.status(404);
-    throw new Error('Driver not found');
-  }
-});
-
-// @desc    Toggle driver availability
-// @route   PATCH /api/drivers/availability
-// @access  Private
-export const toggleAvailability = asyncHandler(async (req, res) => {
-  const driver = await Driver.findById(req.driver._id);
-  if (!driver) {
-    res.status(404);
-    throw new Error('Driver not found');
-  }
+  if (!driver) return res.status(404).json({ message: 'Driver not found' });
 
   driver.isAvailable = !driver.isAvailable;
   await driver.save();
 
-  res.json({ available: driver.isAvailable });
-});
+  res.json({ message: `Availability toggled to ${driver.isAvailable}` });
+};
 
-// @desc    Get all drivers (Admin)
-// @route   GET /api/admin/drivers
-// @access  Admin
-export const getAllDrivers = asyncHandler(async (req, res) => {
-  const drivers = await Driver.find({});
+// Get all drivers (admin)
+export const getAllDrivers = async (req, res) => {
+  const drivers = await Driver.find().select('-password');
   res.json(drivers);
-});
+};
 
-// @desc    Approve driver (Admin)
-// @route   PATCH /api/admin/drivers/:id/approve
-// @access  Admin
-export const approveDriver = asyncHandler(async (req, res) => {
+// Approve driver (admin)
+export const approveDriver = async (req, res) => {
   const driver = await Driver.findById(req.params.id);
-  if (!driver) {
-    res.status(404);
-    throw new Error('Driver not found');
-  }
+  if (!driver) return res.status(404).json({ message: 'Driver not found' });
+
   driver.isApproved = true;
   await driver.save();
+
   res.json({ message: 'Driver approved' });
-});
+};
+
+// Delete driver (admin)
+export const deleteDriver = async (req, res) => {
+  const driver = await Driver.findById(req.params.id);
+  if (!driver) return res.status(404).json({ message: 'Driver not found' });
+
+  await driver.remove();
+  res.json({ message: 'Driver deleted' });
+};
