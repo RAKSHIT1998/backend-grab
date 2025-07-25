@@ -5,6 +5,8 @@ import Partner from '../models/partnerModel.js';
 import Rating from '../models/ratingModel.js';
 import Payout from '../models/payoutModel.js';
 import Content from '../models/contentModel.js';
+import Order from '../models/orderModel.js';
+import Taxi from '../models/taxiModel.js';
 import { sendPushNotification } from '../utils/notifier.js';
 
 export const getDashboardStats = async (req, res) => {
@@ -13,7 +15,28 @@ export const getDashboardStats = async (req, res) => {
     const drivers = await Driver.countDocuments();
     const partners = await Partner.countDocuments();
     const totalRatings = await Rating.countDocuments();
-    res.json({ users, drivers, partners, totalRatings });
+    const orders = await Order.countDocuments();
+    const rides = await Taxi.countDocuments();
+
+    const orderTotal = await Order.aggregate([
+      { $group: { _id: null, total: { $sum: '$totalAmount' } } },
+    ]);
+    const rideCommission = await Taxi.aggregate([
+      { $group: { _id: null, total: { $sum: '$commission' } } },
+    ]);
+
+    const orderCommission = (orderTotal[0]?.total || 0) * 0.1;
+    const totalRevenue = orderCommission + (rideCommission[0]?.total || 0);
+
+    res.json({
+      users,
+      drivers,
+      partners,
+      totalRatings,
+      orders,
+      rides,
+      totalRevenue,
+    });
   } catch (err) {
     res.status(500).json({ error: 'Server error' });
   }
