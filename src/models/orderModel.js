@@ -17,8 +17,7 @@
 
 // module.exports = orderModel;
 
-const { Schema, model } = require("mongoose");
-const mongoose = require("mongoose");
+import mongoose, { Schema, model } from 'mongoose';
 
 const orderItemSchema = new Schema({
   itemId: { 
@@ -62,4 +61,5 @@ const orderSchema = new Schema({
 });
 
 const orderModel = model('orders', orderSchema);
-module.exports = orderModel;
+
+export default orderModel;
