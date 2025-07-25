@@ -1,7 +1,7 @@
 // src/routes/porterRoutes.js
 const express = require("express");
 const Porter = require("../models/porterModel");
-const auth = require("../middleware/auth");
+const auth = require("../middleware/auth.cjs");
 const { v4: uuidv4 } = require("uuid");
 
 const porterRouter = express.Router();

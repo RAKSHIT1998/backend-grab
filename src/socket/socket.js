@@ -1,6 +1,8 @@
-const { Server } = require("socket.io");
-const jwt = require("jsonwebtoken");
-const key = "#479@/^5149*@123"; // Use from env in production
+import { Server } from 'socket.io';
+import jwt from 'jsonwebtoken';
+
+// Use env var in production
+const key = process.env.JWT_SECRET || '#479@/^5149*@123';
 
 let io;
 
@@ -76,4 +78,4 @@ const initSocketServer = (httpServer) => {
   return io;
 };
 
-module.exports = { initSocketServer };
+export { initSocketServer };

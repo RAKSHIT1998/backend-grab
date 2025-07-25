@@ -2,7 +2,7 @@
 import asyncHandler from 'express-async-handler';
 import Order from '../models/orderModel.js';
 import Driver from '../models/driverModel.js';
-import calculateFare from '../utils/fareCalculator.js';
+import { calculateFare } from '../utils/fareCalculator.js';
 
 // Create Bike Taxi Booking
 export const bookBikeTaxi = asyncHandler(async (req, res) => {

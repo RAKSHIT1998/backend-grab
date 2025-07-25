@@ -1,6 +1,6 @@
 // src/controllers/adminTaxiController.js
-const taxiModel = require("../models/taxiModel");
-const userModel = require("../models/userModel");
+import taxiModel from '../models/taxiModel.js';
+import userModel from '../models/userModel.js';
 
 // Get all taxi bookings
 const getAllTaxiBookings = async (req, res) => {
@@ -65,9 +65,4 @@ const updateTaxiBookingStatus = async (req, res) => {
   }
 };
 
-module.exports = {
-  getAllTaxiBookings,
-  deleteTaxiBooking,
-  assignDriverToBooking,
-  updateTaxiBookingStatus,
-};
+export { getAllTaxiBookings, deleteTaxiBooking, assignDriverToBooking, updateTaxiBookingStatus };

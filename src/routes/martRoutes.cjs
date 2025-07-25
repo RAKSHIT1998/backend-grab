@@ -1,7 +1,7 @@
 // src/routes/martRoutes.js
 const express = require("express");
 const Mart = require("../models/martModel");
-const auth = require("../middleware/auth");
+const auth = require("../middleware/auth.cjs");
 const { v4: uuidv4 } = require("uuid");
 
 const martRouter = express.Router();

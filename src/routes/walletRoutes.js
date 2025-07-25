@@ -8,15 +8,15 @@ import {
   getUserWalletHistory,
 } from '../controllers/walletController.js';
 
-import { protect, protectAdmin } from '../middleware/authMiddleware.js';
+import { protectUser, protectAdmin } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
 // User wallet
-router.get('/balance', protect, getWalletBalance);
-router.post('/topup', protect, topUpWallet);
-router.post('/withdraw', protect, withdrawFromWallet);
-router.get('/history', protect, getUserWalletHistory);
+router.get('/balance', protectUser, getWalletBalance);
+router.post('/topup', protectUser, topUpWallet);
+router.post('/withdraw', protectUser, withdrawFromWallet);
+router.get('/history', protectUser, getUserWalletHistory);
 
 // Admin route
 router.get('/admin/all', protectAdmin, getAllWallets);

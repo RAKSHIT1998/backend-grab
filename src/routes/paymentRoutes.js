@@ -3,28 +3,20 @@ import express from 'express';
 import {
   createOrder,
   verifyPayment,
-  handleWebhook,
-  simulateSuccess,
-  issueRefund,
+  razorpayWebhook,
 } from '../controllers/paymentController.js';
 
-import { protect, protectAdmin } from '../middleware/authMiddleware.js';
+import { protectUser } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
 // User: initiate Razorpay order
-router.post('/create-order', protect, createOrder);
+router.post('/create-order', protectUser, createOrder);
 
 // Razorpay webhook
-router.post('/webhook', handleWebhook); // public endpoint for Razorpay
-
-// Optional: simulate success (for testing only)
-router.post('/simulate-success', protect, simulateSuccess);
-
-// Admin: initiate refund
-router.post('/refund', protectAdmin, issueRefund);
+router.post('/webhook', razorpayWebhook); // public endpoint for Razorpay
 
 // User: verify payment after frontend callback
-router.post('/verify', protect, verifyPayment);
+router.post('/verify', protectUser, verifyPayment);
 
 export default router;
