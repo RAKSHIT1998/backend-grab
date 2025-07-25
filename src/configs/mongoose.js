@@ -1,2 +1,3 @@
 // config/mongoose.js
-module.exports = require('./db'); // Just re-export db.js
+import connectDB from './db.js';
+export default connectDB;

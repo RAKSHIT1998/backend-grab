@@ -1,6 +1,5 @@
 
-const { Schema, model } = require('mongoose');
-const mongoose = require('mongoose');
+import mongoose, { Schema, model } from 'mongoose';
 
 const ratingSchema = new Schema({
     itemId: { 
@@ -25,4 +24,4 @@ const ratingSchema = new Schema({
 ratingSchema.index({ itemId: 1, userId: 1 });
 
 const ratingModel = model('ratings', ratingSchema);
-module.exports = ratingModel;
+export default ratingModel;

@@ -1,52 +1,32 @@
 // src/routes/adminRoutes.js
 import express from 'express';
 import {
-  getAllUsers,
-  getAllDrivers,
-  getAllRestaurants,
-  approveDriver,
-  approveRestaurant,
-  toggleUserActivity,
-  getAllRatings,
-  getAllPayoutRequests,
-  processPayout,
-  issueRefund,
-  sendSystemNotification,
-  updateContent,
   getDashboardStats,
-  creditWallet,
+  approveDriver,
+  approvePartner,
+  getAllRatings,
+  sendAdminNotification,
+  updateContent,
 } from '../controllers/adminController.js';
 
-import { protectAdmin, isAdmin } from '../middleware/authMiddleware.js';
+import { protectAdmin } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
 // Admin Dashboard stats
-router.get('/dashboard', protectAdmin, isAdmin, getDashboardStats);
+router.get('/dashboard', protectAdmin, getDashboardStats);
 
 // Users & Drivers
-router.get('/users', protectAdmin, isAdmin, getAllUsers);
-router.get('/drivers', protectAdmin, isAdmin, getAllDrivers);
-router.get('/restaurants', protectAdmin, isAdmin, getAllRestaurants);
-router.put('/approve/driver/:id', protectAdmin, isAdmin, approveDriver);
-router.put('/approve/restaurant/:id', protectAdmin, isAdmin, approveRestaurant);
-router.put('/user/toggle/:id', protectAdmin, isAdmin, toggleUserActivity);
+router.put('/approve/driver/:id', protectAdmin, approveDriver);
+router.put('/approve/restaurant/:id', protectAdmin, approvePartner);
 
 // Ratings/Feedback
-router.get('/ratings', protectAdmin, isAdmin, getAllRatings);
+router.get('/ratings', protectAdmin, getAllRatings);
 
-// Payouts & Refunds
-router.get('/payouts', protectAdmin, isAdmin, getAllPayoutRequests);
-router.post('/payout/:id', protectAdmin, isAdmin, processPayout);
-router.post('/refund/:orderId', protectAdmin, isAdmin, issueRefund);
-
-// System Notifications
-router.post('/notify', protectAdmin, isAdmin, sendSystemNotification);
+// Send Admin Notification
+router.post('/notify', protectAdmin, sendAdminNotification);
 
 // Content Editor (e.g. banners, announcements)
-router.put('/content/:section', protectAdmin, isAdmin, updateContent);
-
-// Credit Wallet
-router.post('/wallet/credit/:userId', protectAdmin, isAdmin, creditWallet);
+router.put('/content/:section', protectAdmin, updateContent);
 
 export default router;

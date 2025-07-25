@@ -1,13 +1,14 @@
 // src/routes/adminTaxiRoutes.js
-const express = require("express");
-const router = express.Router();
-const {
+import express from 'express';
+import {
   getAllTaxiBookings,
   deleteTaxiBooking,
   assignDriverToBooking,
   updateTaxiBookingStatus,
-} = require("../controllers/adminTaxiController");
-const adminAuth = require("../middleware/adminAuth");
+} from '../controllers/adminTaxiController.js';
+import adminAuth from '../middleware/adminAuth.js';
+
+const router = express.Router();
 
 // Get all taxi bookings
 router.get("/bookings", adminAuth, getAllTaxiBookings);
@@ -21,4 +22,4 @@ router.post("/bookings/assign-driver", adminAuth, assignDriverToBooking);
 // Update booking status (e.g., "completed", "cancelled")
 router.patch("/bookings/status", adminAuth, updateTaxiBookingStatus);
 
-module.exports = router;
+export default router;

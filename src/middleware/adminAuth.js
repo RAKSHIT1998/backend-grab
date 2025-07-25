@@ -1,7 +1,7 @@
 // src/middleware/adminAuth.js
-const jwt = require("jsonwebtoken");
-const userModel = require("../models/userModel");
-const key = "#479@/^5149*@123"; // Use env variable in production
+import jwt from 'jsonwebtoken';
+import userModel from '../models/userModel.js';
+const key = process.env.JWT_SECRET || '#479@/^5149*@123';
 
 const adminAuth = async (req, res, next) => {
   try {
@@ -28,4 +28,4 @@ const adminAuth = async (req, res, next) => {
   }
 };
 
-module.exports = adminAuth;
+export default adminAuth;

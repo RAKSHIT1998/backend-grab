@@ -2,6 +2,7 @@
 import nodemailer from 'nodemailer';
 import fetch from 'node-fetch';
 import dotenv from 'dotenv';
+import Notification from '../models/notificationModel.js';
 dotenv.config();
 
 const sendEmail = async (to, subject, text, html = '') => {
@@ -71,4 +72,25 @@ const sendPush = async (token, title, body) => {
   }
 };
 
-export { sendEmail, sendSMS, sendPush };
+// Generic notification helper used by controllers
+const sendNotification = async (userId, message, title = 'Notification') => {
+  try {
+    await Notification.create({
+      recipient: userId,
+      recipientModel: 'User',
+      title,
+      message,
+    });
+    // For simplicity, treat userId as push token
+    await sendPush(userId.toString(), title, message);
+  } catch (err) {
+    console.error('Notification error:', err.message);
+  }
+};
+
+// Named export for adminController compatibility
+const sendPushNotification = sendPush;
+
+export { sendEmail, sendSMS, sendPush, sendPushNotification, sendNotification };
+
+export default sendNotification;

@@ -3,8 +3,8 @@ const express = require("express");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const Restaurant = require("../models/restaurantModel");
-const { roles } = require("../utils/constant");
-const auth = require("../middleware/auth");
+const { roles } = require("../utils/constant.cjs");
+const auth = require("../middleware/auth.cjs");
 const { v4: uuidv4 } = require("uuid");
 
 const restaurantRouter = express.Router();

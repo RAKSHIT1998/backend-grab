@@ -1,5 +1,5 @@
 // src/models/taxiModel.js
-const mongoose = require("mongoose");
+import mongoose from 'mongoose';
 
 const taxiSchema = new mongoose.Schema(
   {
@@ -121,4 +121,5 @@ const taxiSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-module.exports = mongoose.model("Taxi", taxiSchema);
+const Taxi = mongoose.model('Taxi', taxiSchema);
+export default Taxi;

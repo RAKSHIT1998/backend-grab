@@ -29,18 +29,18 @@ const MONGO_URI =
 connectDB(MONGO_URI);
 
 // Import all routers
-import userRouter from './src/routes/userRoutes.js';
+import userRouter from './src/routes/userRoutes.cjs';
 import driverRouter from './src/routes/driverRoutes.js';
-import restaurantRouter from './src/routes/restaurantRoutes.js';
-import martRouter from './src/routes/martRoutes.js';
-import porterRouter from './src/routes/porterRoutes.js';
+import restaurantRouter from './src/routes/restaurantRoutes.cjs';
+import martRouter from './src/routes/martRoutes.cjs';
+import porterRouter from './src/routes/porterRoutes.cjs';
 import bikeRouter from './src/routes/bikeRoutes.js';
-import taxiRouter from './src/routes/taxiRoutes.js';
+import taxiRouter from './src/routes/taxiRoutes.cjs';
 import adminTaxiRoutes from './src/routes/adminTaxiRoutes.js';
 import walletRouter from './src/routes/walletRoutes.js';
 import paymentRouter from './src/routes/paymentRoutes.js';
 import adminRouter from './src/routes/adminRoutes.js';
-import ratingRouter from './src/routes/ratingRoutes.js';
+import ratingRouter from './src/routes/ratingRoutes.cjs';
 import fareRouter from './src/routes/fareRoutes.js';
 import notificationRouter from './src/routes/notificationRoutes.js';
 

@@ -8,8 +8,8 @@ const nodemailer = require("nodemailer");
 const crypto = require("crypto");
 const key = "#479@/^5149*@123";
 const userModel = require("../models/userModel");
-const auth = require("../middleware/auth");
-const { roles } = require("../utils/constant");
+const auth = require("../middleware/auth.cjs");
+const { roles } = require("../utils/constant.cjs");
 
 global.verificationCodes = global.verificationCodes || {};
 setInterval(() => {

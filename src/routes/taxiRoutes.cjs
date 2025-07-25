@@ -2,7 +2,7 @@
 
 const express = require("express");
 const taxiRouter = express.Router();
-const auth = require("../middleware/auth");
+const auth = require("../middleware/auth.cjs");
 const Taxi = require("../models/taxiModel");
 const { v4: uuidv4 } = require("uuid");
 
