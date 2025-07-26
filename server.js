@@ -43,6 +43,9 @@ import adminRouter from './src/routes/adminRoutes.js';
 import ratingRouter from './src/routes/ratingRoutes.cjs';
 import fareRouter from './src/routes/fareRoutes.js';
 import notificationRouter from './src/routes/notificationRoutes.js';
+import movieRouter from './src/routes/movieRoutes.js';
+import activityRouter from './src/routes/activityRoutes.js';
+import newsRouter from './src/routes/newsRoutes.js';
 
 // Mount API routes
 app.use('/api/users', userRouter);
@@ -59,6 +62,9 @@ app.use('/api/admin', adminRouter);
 app.use('/api/ratings', ratingRouter);
 app.use('/api/fare', fareRouter);
 app.use('/api/notifications', notificationRouter);
+app.use('/api/movies', movieRouter);
+app.use('/api/activities', activityRouter);
+app.use('/api/news', newsRouter);
 
 // Root health check route
 app.get('/', (req, res) => {
