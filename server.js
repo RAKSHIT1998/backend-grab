@@ -46,6 +46,7 @@ import notificationRouter from './src/routes/notificationRoutes.js';
 import movieRouter from './src/routes/movieRoutes.js';
 import activityRouter from './src/routes/activityRoutes.js';
 import newsRouter from './src/routes/newsRoutes.js';
+import depositRouter from './src/routes/depositRoutes.js';
 
 // Mount API routes
 app.use('/api/users', userRouter);
@@ -65,6 +66,7 @@ app.use('/api/notifications', notificationRouter);
 app.use('/api/movies', movieRouter);
 app.use('/api/activities', activityRouter);
 app.use('/api/news', newsRouter);
+app.use('/api/deposits', depositRouter);
 
 // Root health check route
 app.get('/', (req, res) => {

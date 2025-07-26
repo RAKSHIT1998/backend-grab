@@ -192,10 +192,13 @@ const sendChefEmail = async (order) => {
 
 // POST - Create new order (place order)
 orderRouter.post("/", async (req, res) => {
-  const { tableNumber } = req.body;
+  const { tableNumber, restaurantId } = req.body;
   const userId = req.user._id;
 
   try {
+    if (!restaurantId) {
+      return res.status(400).json({ message: "restaurantId is required" });
+    }
     // Get user details
     const user = await userModel.findById(userId);
     if (!user) {
@@ -255,6 +258,7 @@ orderRouter.post("/", async (req, res) => {
     // Create order
     const order = await orderModel.create({
       userId,
+      restaurantId,
       orderItems,
       tableNumber,
       totalAmount,
@@ -313,6 +317,8 @@ orderRouter.post("/", async (req, res) => {
         sendAdminEmail(order, user),
         sendChefEmail(order)
       ]);
+      // Notify restaurant app about the new order
+      req.io.of('/restaurant').emit('newOrder', order);
       req.io.emit("cartCleared", { userId, action: "order_placed" });
   
       return res.status(201).json({

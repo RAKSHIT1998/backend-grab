@@ -30,6 +30,14 @@ const restaurantSchema = new mongoose.Schema(
     image: {
       type: String,
     },
+    fssaiLicense: {
+      type: String,
+    },
+    bankDetails: {
+      accountHolder: String,
+      accountNumber: String,
+      ifsc: String,
+    },
     isApproved: {
       type: Boolean,
       default: false,
