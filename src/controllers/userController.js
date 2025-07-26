@@ -147,3 +147,22 @@ export const sendOtp = asyncHandler(async (req, res) => {
   await sendEmail(email, 'Your OTP Code', `Your OTP code is ${otp}`);
   res.json({ message: 'OTP sent to email' });
 });
+
+// @desc    Update the logged in user's location
+// @route   PUT /api/users/location
+export const updateUserLocation = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user._id);
+  if (!user) {
+    res.status(404);
+    throw new Error('User not found');
+  }
+
+  user.location = {
+    lat: req.body.lat,
+    lng: req.body.lng,
+    address: req.body.address || user.location?.address,
+  };
+
+  await user.save();
+  res.json({ message: 'Location updated' });
+});
