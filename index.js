@@ -16,7 +16,7 @@ const io = new Server(server, {
 });
 import connectDB from './src/configs/mongoose.js';
 import auth from './src/middleware/auth.cjs';
-import userRouter from './src/routes/userRouter.js';
+import userRouter from './src/routes/userRoutes.js';
 import menuRouter from './src/routes/menuRouter.js';
 import orderRouter from './src/routes/orderRouter.js';
 import cartRouter from './src/routes/cartRouter.js';

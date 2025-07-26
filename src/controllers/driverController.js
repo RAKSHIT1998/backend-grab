@@ -60,6 +60,28 @@ export const getDriverProfile = async (req, res) => {
   }
 };
 
+// Update driver profile
+export const updateDriverProfile = async (req, res) => {
+  const driver = await Driver.findById(req.driver._id);
+  if (!driver) return res.status(404).json({ message: 'Driver not found' });
+
+  driver.name = req.body.name || driver.name;
+  driver.phone = req.body.phone || driver.phone;
+  driver.vehicleNumber = req.body.vehicleNumber || driver.vehicleNumber;
+
+  if (req.body.password) {
+    driver.password = req.body.password;
+  }
+
+  const updated = await driver.save();
+  res.json({
+    _id: updated._id,
+    name: updated.name,
+    phone: updated.phone,
+    vehicleNumber: updated.vehicleNumber,
+  });
+};
+
 // Update availability
 export const toggleDriverAvailability = async (req, res) => {
   const driver = await Driver.findById(req.driver._id);
