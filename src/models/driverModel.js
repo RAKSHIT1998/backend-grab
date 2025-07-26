@@ -8,6 +8,11 @@ const driverSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+    },
     phone: {
       type: String,
       required: true,
@@ -17,12 +22,32 @@ const driverSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    // Image URL for the driver's profile picture
+    photo: {
+      type: String,
+      default: '',
+    },
     vehicleType: {
       type: String,
       enum: ['bike', 'taxi'],
       required: true,
     },
+    // Brand of the vehicle (e.g. Honda, Toyota)
+    vehicleBrand: {
+      type: String,
+      default: '',
+    },
+    // Model or name of the vehicle
+    vehicleModel: {
+      type: String,
+      default: '',
+    },
     vehicleNumber: {
+      type: String,
+      required: true,
+    },
+    // Driver license number for verification
+    licenseNumber: {
       type: String,
       required: true,
     },

@@ -3,7 +3,18 @@ import generateToken from '../utils/generateToken.js';
 
 // Register a new driver
 export const registerDriver = async (req, res) => {
-  const { name, email, phone, password, vehicleType, licenseNumber } = req.body;
+  const {
+    name,
+    email,
+    phone,
+    password,
+    vehicleType,
+    licenseNumber,
+    photo,
+    vehicleBrand,
+    vehicleModel,
+    vehicleNumber,
+  } = req.body;
 
   const driverExists = await Driver.findOne({ email });
   if (driverExists) {
@@ -15,7 +26,11 @@ export const registerDriver = async (req, res) => {
     email,
     phone,
     password,
+    photo,
     vehicleType,
+    vehicleBrand,
+    vehicleModel,
+    vehicleNumber,
     licenseNumber,
   });
 
@@ -67,7 +82,11 @@ export const updateDriverProfile = async (req, res) => {
 
   driver.name = req.body.name || driver.name;
   driver.phone = req.body.phone || driver.phone;
+  driver.photo = req.body.photo || driver.photo;
+  driver.vehicleBrand = req.body.vehicleBrand || driver.vehicleBrand;
+  driver.vehicleModel = req.body.vehicleModel || driver.vehicleModel;
   driver.vehicleNumber = req.body.vehicleNumber || driver.vehicleNumber;
+  driver.licenseNumber = req.body.licenseNumber || driver.licenseNumber;
 
   if (req.body.password) {
     driver.password = req.body.password;
