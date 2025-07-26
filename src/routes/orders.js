@@ -3,6 +3,7 @@ const router = express.Router();
 import Order from '../models/Order.js';
 import Restaurant from '../models/restaurant.js';
 import Driver from '../models/Driver.js';
+import constants from '../utils/constant.cjs';
 
 // Place order
 router.post('/', async (req, res) => {
@@ -12,8 +13,9 @@ router.post('/', async (req, res) => {
 
   let total = 0;
   items.forEach(it => { total += it.price * (it.qty || 1); });
-  let commission = total * 0.10;
-  let gst = commission * 0.18;
+  const { commissionRate, gstRate } = constants;
+  let commission = total * commissionRate;
+  let gst = commission * gstRate;
   let deliveryFee = 17 + (location.distanceKm || 0) * 2; // or calculate based on distance
   // Optionally add surge fee logic here
 

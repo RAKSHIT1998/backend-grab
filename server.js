@@ -43,6 +43,30 @@ import adminRouter from './src/routes/adminRoutes.js';
 import ratingRouter from './src/routes/ratingRoutes.cjs';
 import fareRouter from './src/routes/fareRoutes.js';
 import notificationRouter from './src/routes/notificationRoutes.js';
+import movieRouter from './src/routes/movieRoutes.js';
+import activityRouter from './src/routes/activityRoutes.js';
+import newsRouter from './src/routes/newsRoutes.js';
+
+// List of base API endpoints
+const apiList = [
+  '/api/users',
+  '/api/drivers',
+  '/api/restaurants',
+  '/api/mart',
+  '/api/porter',
+  '/api/bike',
+  '/api/taxi',
+  '/api/admin/taxi',
+  '/api/wallet',
+  '/api/payments',
+  '/api/admin',
+  '/api/ratings',
+  '/api/fare',
+  '/api/notifications',
+  '/api/movies',
+  '/api/activities',
+  '/api/news'
+];
 
 // Mount API routes
 app.use('/api/users', userRouter);
@@ -59,12 +83,19 @@ app.use('/api/admin', adminRouter);
 app.use('/api/ratings', ratingRouter);
 app.use('/api/fare', fareRouter);
 app.use('/api/notifications', notificationRouter);
+app.use('/api/movies', movieRouter);
+app.use('/api/activities', activityRouter);
+app.use('/api/news', newsRouter);
 
 // Root health check route
 app.get('/', (req, res) => {
-  res.send(
-    '🚀 Grab SuperApp API is running. Available endpoints start with /api/'
-  );
+  if (process.env.RENDER) {
+    res.json({ message: 'Grab SuperApp API', endpoints: apiList });
+  } else {
+    res.send(
+      '🚀 Grab SuperApp API is running. Available endpoints start with /api/'
+    );
+  }
 });
 
 // Global error handler
