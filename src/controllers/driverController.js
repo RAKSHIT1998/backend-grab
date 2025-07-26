@@ -112,6 +112,21 @@ export const toggleDriverAvailability = async (req, res) => {
   res.json({ message: `Availability toggled to ${driver.isAvailable}` });
 };
 
+// Update driver's current location
+export const updateDriverLocation = async (req, res) => {
+  const driver = await Driver.findById(req.driver._id);
+  if (!driver) return res.status(404).json({ message: 'Driver not found' });
+
+  driver.location = {
+    lat: req.body.lat,
+    lng: req.body.lng,
+    updatedAt: new Date(),
+  };
+
+  await driver.save();
+  res.json({ message: 'Location updated' });
+};
+
 // Get all drivers (admin)
 export const getAllDrivers = async (req, res) => {
   const drivers = await Driver.find().select('-password');

@@ -5,6 +5,7 @@ import {
   logoutUser,
   getUserProfile,
   updateUserProfile,
+  updateUserLocation,
   verifyUser,
   sendOtp,
 } from '../controllers/userController.js';
@@ -17,6 +18,7 @@ router.post('/login', authUser);
 router.post('/logout', protectUser, logoutUser);
 router.get('/profile', protectUser, getUserProfile);
 router.put('/profile', protectUser, updateUserProfile);
+router.put('/location', protectUser, updateUserLocation);
 router.post('/verify', verifyUser);
 router.post('/send-otp', sendOtp);
 

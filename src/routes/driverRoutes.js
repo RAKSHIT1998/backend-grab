@@ -5,6 +5,7 @@ import {
   getDriverProfile,
   updateDriverProfile,
   toggleDriverAvailability,
+  updateDriverLocation,
   getAllDrivers,
   approveDriver,
   deleteDriver,
@@ -18,6 +19,7 @@ router.post('/login', loginDriver);
 router.get('/profile', protectDriver, getDriverProfile);
 router.put('/profile', protectDriver, updateDriverProfile);
 router.patch('/availability', protectDriver, toggleDriverAvailability);
+router.put('/location', protectDriver, updateDriverLocation);
 
 // Admin routes
 router.get('/', protectAdmin, getAllDrivers);

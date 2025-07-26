@@ -37,6 +37,13 @@ const initSocketServer = (httpServer) => {
       userNamespace.emit("receive-notification", data);
     });
 
+    socket.on("user-location", (location) => {
+      io.of("/driver").emit("update-user-location", {
+        userId: socket.user.id,
+        location,
+      });
+    });
+
     socket.on("disconnect", () => {
       console.log("User disconnected:", socket.user.id);
     });

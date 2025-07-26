@@ -22,3 +22,11 @@ incoming cab and facilitates phone number exchange between passenger and driver.
 ## Application Settings
 The `/api/settings` endpoint allows admins to manage global configuration for the app.
 `GET /api/settings` fetches all settings while `POST /api/settings` creates or updates a value. Authentication as an admin is required to modify settings.
+
+## Live Tracking
+Drivers and customers can share their real-time location while an order or ride is active.
+
+- **PUT `/api/users/location`** - update the logged in customer's coordinates.
+- **PUT `/api/drivers/location`** - update the current driver's coordinates.
+
+WebSocket events `driver-location` and the new `user-location` broadcast updates so both sides can track progress in the app.
