@@ -60,6 +60,13 @@ app.use('/api/ratings', ratingRouter);
 app.use('/api/fare', fareRouter);
 app.use('/api/notifications', notificationRouter);
 
+// Root health check route
+app.get('/', (req, res) => {
+  res.send(
+    '🚀 Grab SuperApp API is running. Available endpoints start with /api/'
+  );
+});
+
 // Global error handler
 app.use(errorHandler);
 
