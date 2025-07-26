@@ -7,6 +7,7 @@ const menuSchema = new Schema({
   price: { type: Number, required: true },
   quantity: { type: Number, required: true },
   availability: { type: Boolean, default: true },
+  image: { type: String },
   averageRating: { type: Number, default: 0 },
   totalRatings: { type: Number, default: 0 },
 });

@@ -33,10 +33,15 @@ const orderItemSchema = new Schema({
 });
 
 const orderSchema = new Schema({
-  userId: { 
-    type: mongoose.Schema.Types.ObjectId, 
-    ref: 'customers', 
-    required: true 
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'customers',
+    required: true
+  },
+  restaurantId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Restaurant',
+    required: true
   },
   orderItems: [orderItemSchema],
   tableNumber: { type: String, required: true },

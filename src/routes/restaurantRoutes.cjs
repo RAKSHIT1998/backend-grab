@@ -3,6 +3,7 @@ const express = require("express");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const Restaurant = require("../models/restaurantModel");
+const Promotion = require("../models/promotionModel.js");
 const { roles } = require("../utils/constant.cjs");
 const auth = require("../middleware/auth.cjs");
 const { v4: uuidv4 } = require("uuid");
@@ -99,6 +100,84 @@ restaurantRouter.delete("/:id", async (req, res) => {
     res.json({ message: "Deleted successfully" });
   } catch (err) {
     res.status(500).json({ message: "Delete error" });
+  }
+});
+
+// Get restaurant profile
+restaurantRouter.get('/profile/:id', async (req, res) => {
+  try {
+    const restaurant = await Restaurant.findById(req.params.id);
+    if (!restaurant) return res.status(404).json({ message: 'Not found' });
+    res.json(restaurant);
+  } catch (err) {
+    res.status(500).json({ message: 'Fetch error' });
+  }
+});
+
+// Update restaurant profile (bank details, license etc.)
+restaurantRouter.put('/profile/:id', async (req, res) => {
+  try {
+    const update = {
+      fssaiLicense: req.body.fssaiLicense,
+      bankDetails: req.body.bankDetails,
+      ownerName: req.body.ownerName,
+      address: req.body.address,
+      image: req.body.image,
+    };
+    const restaurant = await Restaurant.findByIdAndUpdate(req.params.id, update, { new: true });
+    if (!restaurant) return res.status(404).json({ message: 'Not found' });
+    res.json(restaurant);
+  } catch (err) {
+    res.status(500).json({ message: 'Update error' });
+  }
+});
+
+// Restaurant analytics (basic)
+restaurantRouter.get('/:id/analytics', async (req, res) => {
+  try {
+    const Order = require('../models/orderModel');
+    const orders = await Order.find({ restaurantId: req.params.id });
+    const totalEarnings = orders.reduce((sum, o) => sum + o.totalAmount, 0);
+    res.json({ totalOrders: orders.length, totalEarnings });
+  } catch (err) {
+    res.status(500).json({ message: 'Analytics error' });
+  }
+});
+
+// Payout info for last week (Mon-Sun)
+restaurantRouter.get('/:id/payouts', async (req, res) => {
+  try {
+    const Order = require('../models/orderModel');
+    const now = new Date();
+    const day = now.getDay();
+    const tuesday = new Date(now);
+    tuesday.setDate(now.getDate() - ((day + 6) % 7)); // Last Tuesday
+    const monday = new Date(tuesday);
+    monday.setDate(tuesday.getDate() - 7);
+    const orders = await Order.find({
+      restaurantId: req.params.id,
+      createdAt: { $gte: monday, $lt: tuesday },
+    });
+    const total = orders.reduce((s, o) => s + o.totalAmount, 0);
+    res.json({ periodStart: monday, periodEnd: tuesday, total });
+  } catch (err) {
+    res.status(500).json({ message: 'Payout calc error' });
+  }
+});
+
+// Create promotion
+restaurantRouter.post('/:id/promotions', async (req, res) => {
+  try {
+    const promo = await Promotion.create({
+      restaurantId: req.params.id,
+      title: req.body.title,
+      description: req.body.description,
+      budget: req.body.budget,
+      deductFromPayout: req.body.deductFromPayout,
+    });
+    res.status(201).json(promo);
+  } catch (err) {
+    res.status(500).json({ message: 'Promotion error' });
   }
 });
 
