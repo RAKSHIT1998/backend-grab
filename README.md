@@ -18,3 +18,7 @@ Drivers registering for taxi service must provide additional vehicle details.
 During registration they upload a profile photo and driving license number along
 with the vehicle brand, model and plate number. This helps riders identify the
 incoming cab and facilitates phone number exchange between passenger and driver.
+
+## Application Settings
+The `/api/settings` endpoint allows admins to manage global configuration for the app.
+`GET /api/settings` fetches all settings while `POST /api/settings` creates or updates a value. Authentication as an admin is required to modify settings.
