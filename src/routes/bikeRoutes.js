@@ -6,6 +6,7 @@ import {
   createFoodBikeDelivery,
   createMartBikeDelivery,
   createPorterBikeDelivery,
+  updateBikeLocation,
 } from '../controllers/bikeController.js';
 
 import { protectUser, protectDriver } from '../middleware/authMiddleware.js';
@@ -23,5 +24,8 @@ router.post('/bike-delivery/mart', protectUser, createMartBikeDelivery);
 
 // Porter Delivery
 router.post('/bike-delivery/porter', protectUser, createPorterBikeDelivery);
+
+// Update live location for bike drivers
+router.put('/location', protectDriver, updateBikeLocation);
 
 export default router;

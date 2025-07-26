@@ -68,6 +68,13 @@ const initSocketServer = (httpServer) => {
       });
     });
 
+    socket.on('bike-location', (location) => {
+      io.of('/user').emit('update-bike-location', {
+        driverId: socket.user.id,
+        location,
+      });
+    });
+
     socket.on('bid-on-request', (bidDetails) => {
       io.of('/user').emit('driver-bid', {
         driverId: socket.user.id,

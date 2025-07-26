@@ -81,3 +81,20 @@ export const createPorterBikeDelivery = asyncHandler(async (req, res) => {
 
   res.status(201).json({ success: true, order });
 });
+
+// Update Bike Driver Location
+export const updateBikeLocation = asyncHandler(async (req, res) => {
+  const driver = await Driver.findOne({ _id: req.driver._id, vehicleType: 'bike' });
+  if (!driver) {
+    return res.status(404).json({ message: 'Bike driver not found' });
+  }
+
+  driver.location = {
+    lat: req.body.lat,
+    lng: req.body.lng,
+    updatedAt: new Date(),
+  };
+
+  await driver.save();
+  res.json({ message: 'Bike location updated' });
+});

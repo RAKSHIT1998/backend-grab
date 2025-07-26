@@ -62,6 +62,13 @@ const initSocketServer = (httpServer) => {
       });
     });
 
+    socket.on("bike-location", (location) => {
+      userNamespace.emit("update-bike-location", {
+        driverId: socket.user.id,
+        location,
+      });
+    });
+
     socket.on("disconnect", () => {
       console.log("Driver disconnected:", socket.user.id);
     });
