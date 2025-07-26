@@ -28,5 +28,6 @@ Drivers and customers can share their real-time location while an order or ride 
 
 - **PUT `/api/users/location`** - update the logged in customer's coordinates.
 - **PUT `/api/drivers/location`** - update the current driver's coordinates.
+- **PUT `/api/bike/location`** - update the location of a bike rider.
 
-WebSocket events `driver-location` and the new `user-location` broadcast updates so both sides can track progress in the app.
+WebSocket events `driver-location`, `bike-location` and the new `user-location` broadcast updates so both sides can track progress in the app.
