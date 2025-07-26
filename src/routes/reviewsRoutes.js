@@ -1,6 +1,6 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const Review = require('../models/Review');
+import Review from '../models/Review.js';
 
 // User posts a review
 router.post('/', async (req, res) => {
@@ -21,4 +21,4 @@ router.get('/all', async (req, res) => {
   const reviews = await Review.find().populate('restaurantId', 'name').populate('userId', 'name');
   res.json(reviews);
 });
-module.exports = router;
+export default router;

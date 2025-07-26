@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 const orderSchema = new mongoose.Schema({
   customerId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   vendorId: { type: mongoose.Schema.Types.ObjectId, ref: "Restaurant" }, // or Mart
@@ -11,4 +11,4 @@ const orderSchema = new mongoose.Schema({
   deliveryFee: Number, surge: Number, commission: Number, gst: Number,
   createdAt: { type: Date, default: Date.now }
 });
-module.exports = mongoose.model("Order", orderSchema);
+export default mongoose.model('Order', orderSchema);

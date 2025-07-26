@@ -1,9 +1,9 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const Restaurant = require('../models/restaurant');
-const User = require('../models/User');
-const Order = require('../models/Order');
-const Ride = require('../models/Ride');
+import Restaurant from '../models/restaurant.js';
+import User from '../models/User.js';
+import Order from '../models/Order.js';
+import Ride from '../models/Ride.js';
 
 // Get all restaurants/users/orders/rides
 router.get('/restaurants', async (req, res) => res.json(await Restaurant.find()));
@@ -17,9 +17,9 @@ router.post('/verify-restaurant/:id', async (req, res) => {
   res.json(r);
 });
 router.post('/verify-driver/:id', async (req, res) => {
-  const Driver = require('../models/Driver');
+  const Driver = (await import('../models/Driver.js')).default;
   const d = await Driver.findByIdAndUpdate(req.params.id, { verified: true }, { new: true });
   res.json(d);
 });
 
-module.exports = router;
+export default router;

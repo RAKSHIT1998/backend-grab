@@ -1,6 +1,6 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const Ride = require('../models/Ride');
+import Ride from '../models/Ride.js';
 
 // Create ride request
 router.post('/', async (req, res) => {
@@ -49,4 +49,4 @@ router.get('/driver/:id', async (req, res) => {
   const rides = await Ride.find({ assignedDriver: req.params.id });
   res.json(rides);
 });
-module.exports = router;
+export default router;

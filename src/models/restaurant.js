@@ -1,6 +1,6 @@
 // src/models/restaurant.js
 
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const restaurantSchema = new mongoose.Schema(
   {
@@ -77,4 +77,4 @@ const restaurantSchema = new mongoose.Schema(
 
 restaurantSchema.index({ location: '2dsphere' });
 
-module.exports = mongoose.model('Restaurant', restaurantSchema);
+export default mongoose.model('Restaurant', restaurantSchema);
