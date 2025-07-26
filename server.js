@@ -29,7 +29,7 @@ const MONGO_URI =
 connectDB(MONGO_URI);
 
 // Import all routers
-import userRouter from './src/routes/userRoutes.cjs';
+import userRouter from './src/routes/userRoutes.js';
 import driverRouter from './src/routes/driverRoutes.js';
 import restaurantRouter from './src/routes/restaurantRoutes.cjs';
 import martRouter from './src/routes/martRoutes.cjs';

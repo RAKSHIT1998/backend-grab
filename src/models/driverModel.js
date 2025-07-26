@@ -1,5 +1,6 @@
 // src/models/driverModel.js
 import mongoose from 'mongoose';
+import bcrypt from 'bcryptjs';
 
 const driverSchema = new mongoose.Schema(
   {
@@ -69,6 +70,19 @@ driverSchema.virtual('averageRating').get(function () {
 
 driverSchema.set('toObject', { virtuals: true });
 driverSchema.set('toJSON', { virtuals: true });
+
+// Hash password before saving
+driverSchema.pre('save', async function (next) {
+  if (!this.isModified('password')) return next();
+  const salt = await bcrypt.genSalt(10);
+  this.password = await bcrypt.hash(this.password, salt);
+  next();
+});
+
+// Compare entered password with hashed
+driverSchema.methods.matchPassword = async function (entered) {
+  return bcrypt.compare(entered, this.password);
+};
 
 const Driver = mongoose.model('Driver', driverSchema);
 export default Driver;
