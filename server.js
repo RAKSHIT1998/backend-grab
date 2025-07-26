@@ -3,6 +3,10 @@ import express from 'express';
 import http from 'http';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import helmet from 'helmet';
+import morgan from 'morgan';
+import compression from 'compression';
+import rateLimit from 'express-rate-limit';
 import { initSocketServer } from './src/socket/socket.js';
 import connectDB from './src/configs/mongoose.js';
 import errorHandler from './src/middleware/errorMiddleware.js';
@@ -20,12 +24,19 @@ initSocketServer(server);
 // Middleware
 app.use(express.json());
 app.use(cors());
+app.use(helmet());
+app.use(compression());
+if (process.env.NODE_ENV !== 'test') {
+  app.use(morgan('dev'));
+}
+app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 1000 }));
 app.use('/uploads', express.static('uploads'));
 
 // Connect to MongoDB
 const MONGO_URI =
+  process.env.MONGODB_URI ||
   process.env.MONGO_URI ||
-  'mongodb+srv://rakshit98:AdminRakshit@cluster0.n1m4mu0.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
+  'mongodb://localhost:27017/grab';
 connectDB(MONGO_URI);
 
 // Import all routers
@@ -48,6 +59,15 @@ import activityRouter from './src/routes/activityRoutes.js';
 import newsRouter from './src/routes/newsRoutes.js';
 import depositRouter from './src/routes/depositRoutes.js';
 import settingRouter from './src/routes/settingRoutes.js';
+import menuRouter from './src/routes/menuRoutes.js';
+import orderRouter from './src/routes/orderRoutes.js';
+import cartRouter from './src/routes/cartRoutes.js';
+import reviewsRouter from './src/routes/reviewsRoutes.js';
+import ridesRouter from './src/routes/ridesRoutes.js';
+import paymentsRouter from './src/routes/payments.js';
+import ordersRouter from './src/routes/orders.js';
+import authRouter from './src/routes/authRoutes.js';
+import adminPortalRouter from './src/routes/admin.js';
 
 // Mount API routes
 app.use('/api/users', userRouter);
@@ -69,6 +89,15 @@ app.use('/api/activities', activityRouter);
 app.use('/api/news', newsRouter);
 app.use('/api/deposits', depositRouter);
 app.use('/api/settings', settingRouter);
+app.use('/api/menu', menuRouter);
+app.use('/api/orders', orderRouter);
+app.use('/api/cart', cartRouter);
+app.use('/api/reviews', reviewsRouter);
+app.use('/api/rides', ridesRouter);
+app.use('/api/payments-alt', paymentsRouter);
+app.use('/api/orders-alt', ordersRouter);
+app.use('/api/auth', authRouter);
+app.use('/api/admin-portal', adminPortalRouter);
 
 // Root health check route
 app.get('/', (req, res) => {

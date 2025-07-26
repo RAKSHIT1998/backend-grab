@@ -1,6 +1,6 @@
 // src/middleware/errorMiddleware.js
 const errorHandler = (err, req, res, next) => {
-  console.error(`❌ Error: ${err.message}`.red);
+  console.error(`❌ Error: ${err.message}`);
 
   const statusCode = res.statusCode && res.statusCode !== 200 ? res.statusCode : 500;
 
