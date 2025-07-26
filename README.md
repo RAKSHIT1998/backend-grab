@@ -7,3 +7,14 @@ Restaurants can register with FSSAI license and bank details. They manage menu i
 
 ## Driver Cash Deposit
 Bike and taxi riders can report daily cash deposits via the `/api/deposits` endpoint.
+
+## Bike Rider Services
+One rider account can perform multiple delivery options. The same bike driver may
+accept food orders, deliver mart items, handle porter jobs and even provide a
+bike taxi ride through the `/api/bike` routes.
+
+## Taxi Driver Onboarding
+Drivers registering for taxi service must provide additional vehicle details.
+During registration they upload a profile photo and driving license number along
+with the vehicle brand, model and plate number. This helps riders identify the
+incoming cab and facilitates phone number exchange between passenger and driver.

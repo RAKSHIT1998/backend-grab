@@ -80,8 +80,11 @@ exports.registerDriver = catchAsync(async (req, res, next) => {
   const driver = await Driver.create({
     user: req.user.id,
     vehicleType: req.body.vehicleType,
+    vehicleBrand: req.body.vehicleBrand,
+    vehicleModel: req.body.vehicleModel,
     vehicleNumber: req.body.vehicleNumber,
     licenseNumber: req.body.licenseNumber,
+    photo: req.body.photo,
     currentLocation: req.body.currentLocation
   });
 
