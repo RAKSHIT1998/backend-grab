@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const driverSchema = new mongoose.Schema({
   user: {
@@ -42,4 +42,4 @@ const driverSchema = new mongoose.Schema({
 
 driverSchema.index({ currentLocation: '2dsphere' });
 
-module.exports = mongoose.model('Driver', driverSchema);
+export default mongoose.model('Driver', driverSchema);

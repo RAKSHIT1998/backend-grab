@@ -1,11 +1,12 @@
-require('dotenv').config(); // Add this at the very top
-const express = require("express");
+import dotenv from 'dotenv';
+dotenv.config(); // Add this at the very top
+import express from 'express';
 const app = express();
 app.use(express.json());
-const cors = require("cors");
+import cors from 'cors';
 app.use(cors());
-const http = require("http");
-const { Server } = require("socket.io");
+import http from 'http';
+import { Server } from 'socket.io';
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
@@ -13,13 +14,13 @@ const io = new Server(server, {
     methods: ["GET", "POST", "PATCH", "DELETE", "PUT"],
   },
 });
-const connectDB = require("./src/configs/mongoose");
-const auth = require("./src/middleware/auth");
-const userRouter = require("./src/routes/userRouter");
-const menuRouter = require("./src/routes/menuRouter");
-const orderRouter = require("./src/routes/orderRouter");
-const cartRouter = require("./src/routes/cartRouter");
-const ratingRouter = require("./src/routes/ratingRouter");
+import connectDB from './src/configs/mongoose.js';
+import auth from './src/middleware/auth.cjs';
+import userRouter from './src/routes/userRouter.js';
+import menuRouter from './src/routes/menuRouter.js';
+import orderRouter from './src/routes/orderRouter.js';
+import cartRouter from './src/routes/cartRouter.js';
+import ratingRouter from './src/routes/ratingRouter.js';
 
 const port = process.env.PORT || 3000;
 

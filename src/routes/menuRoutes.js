@@ -1,7 +1,7 @@
 
-const { Router } = require("express");
-const auth = require("../middleware/auth");
-const menuModel = require("../models/menuModel");
+import { Router } from 'express';
+import auth from '../middleware/auth.cjs';
+import menuModel from '../models/menuModel.js';
 const menuRouter = Router();
 menuRouter.use(auth);
 
@@ -37,7 +37,7 @@ menuRouter.delete("/:id", async (req, res) => {
       return res.status(404).json({ message: "Event not found" });
     }
     await menuModel.findByIdAndDelete(id);
-     const cartModel = require("../models/cartModel");
+     const cartModel = (await import("../models/cartModel.js")).default;
     const removedCartItems = await cartModel.find({ itemId: id });
     await cartModel.deleteMany({ itemId: id });
     req.io.emit("menuItemDeleted", id);
@@ -68,7 +68,7 @@ menuRouter.patch("/:id", async (req, res) => {
       return res.status(404).json({ message: "Menu item not found" });
     }
     req.io.emit("menuItemUpdated", updatedMenuItem);
-    const cartModel = require("../models/cartModel");
+    const cartModel = (await import("../models/cartModel.js")).default;
     if (!updatedMenuItem.availability) {
       // Remove this item from all users' carts when it goes out of stock
       const removedCartItems = await cartModel.find({ itemId: id });
@@ -118,4 +118,4 @@ menuRouter.patch("/:id", async (req, res) => {
   }
 });
 
-module.exports = menuRouter;
+export default menuRouter;

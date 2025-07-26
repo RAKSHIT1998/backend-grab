@@ -1,8 +1,8 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const Order = require('../models/Order');
-const Restaurant = require('../models/restaurant');
-const Driver = require('../models/Driver');
+import Order from '../models/Order.js';
+import Restaurant from '../models/restaurant.js';
+import Driver from '../models/Driver.js';
 
 // Place order
 router.post('/', async (req, res) => {
@@ -64,4 +64,4 @@ router.get('/rider/:id', async (req, res) => {
   res.json(orders);
 });
 
-module.exports = router;
+export default router;

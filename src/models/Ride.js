@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 const bidSchema = new mongoose.Schema({ driverId: String, amount: Number, status: String });
 const rideSchema = new mongoose.Schema({
   customerId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
@@ -6,4 +6,4 @@ const rideSchema = new mongoose.Schema({
   bids: [bidSchema], assignedDriver: String, fare: Number,
   status: { type: String, default: "pending" }, createdAt: { type: Date, default: Date.now }
 });
-module.exports = mongoose.model("Ride", rideSchema);
+export default mongoose.model('Ride', rideSchema);

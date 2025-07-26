@@ -1,8 +1,8 @@
 
-const { Router } = require("express");
-const auth = require("../middleware/auth");
-const cartModel = require("../models/cartModel");
-const menuModel = require("../models/menuModel");
+import { Router } from 'express';
+import auth from '../middleware/auth.cjs';
+import cartModel from '../models/cartModel.js';
+import menuModel from '../models/menuModel.js';
 const cartRouter = Router();
 
 cartRouter.use(auth);
@@ -187,4 +187,4 @@ cartRouter.get("/summary", async (req, res) => {
   }
 });
 
-module.exports = cartRouter;
+export default cartRouter;

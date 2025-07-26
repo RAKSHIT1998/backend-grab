@@ -1,6 +1,5 @@
 
-const { Schema, model } = require('mongoose');
-const mongoose = require('mongoose');
+import mongoose, { Schema, model } from 'mongoose';
 
 const cartSchema = new Schema({
     userId: { 
@@ -26,4 +25,4 @@ const cartSchema = new Schema({
 cartSchema.index({ userId: 1, itemId: 1 }, { unique: true });
 
 const cartModel = model('carts', cartSchema);
-module.exports = cartModel;
+export default cartModel;
