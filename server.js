@@ -68,6 +68,8 @@ import paymentsRouter from './src/routes/payments.js';
 import ordersRouter from './src/routes/orders.js';
 import authRouter from './src/routes/authRoutes.js';
 import adminPortalRouter from './src/routes/admin.js';
+import historyRouter from './src/routes/historyRoutes.js';
+import supportRouter from './src/routes/supportRoutes.js';
 
 // Mount API routes
 app.use('/api/users', userRouter);
@@ -98,6 +100,8 @@ app.use('/api/payments-alt', paymentsRouter);
 app.use('/api/orders-alt', ordersRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/admin-portal', adminPortalRouter);
+app.use('/api/history', historyRouter);
+app.use('/api/support', supportRouter);
 
 // Root health check route
 app.get('/', (req, res) => {

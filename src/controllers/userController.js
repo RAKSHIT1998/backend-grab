@@ -51,6 +51,13 @@ export const authUser = asyncHandler(async (req, res) => {
 
   if (user && (await bcrypt.compare(password, user.password))) {
     generateToken(res, user._id);
+    // Record login history
+    const { default: LoginHistory } = await import('../models/loginHistoryModel.js');
+    await LoginHistory.create({
+      user: user._id,
+      userAgent: req.get('user-agent'),
+      ipAddress: req.ip,
+    });
     res.json({
       _id: user._id,
       name: user.name,
