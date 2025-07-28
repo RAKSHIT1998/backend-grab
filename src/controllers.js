@@ -1,4 +1,4 @@
-const User = require('../models/User');
+const User = require('../models/userModel.js');
 const Driver = require('../models/Driver');
 const Restaurant = require('../models/Restaurant');
 const Menu = require('../models/Menu');
