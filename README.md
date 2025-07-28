@@ -31,3 +31,19 @@ Drivers and customers can share their real-time location while an order or ride 
 - **PUT `/api/bike/location`** - update the location of a bike rider.
 
 WebSocket events `driver-location`, `bike-location` and the new `user-location` broadcast updates so both sides can track progress in the app.
+
+## User Registration
+
+Create a new account using the `/api/users/register` endpoint. The request body must include `name`, `phone` and `password`. A valid email can also be provided but is optional.
+
+```http
+POST /api/users/register
+{
+  "name": "John Doe",
+  "phone": "9876543210",
+  "password": "strongPass1",
+  "email": "john@example.com"
+}
+```
+
+If any required field is missing the API responds with status `400` and a descriptive error message.
