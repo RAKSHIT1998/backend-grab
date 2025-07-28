@@ -2,7 +2,6 @@ import express from 'express';
 const router = express.Router();
 import Order from '../models/Order.js';
 import Restaurant from '../models/restaurant.js';
-import Driver from '../models/Driver.js';
 import constants from '../utils/constant.cjs';
 
 // Place order
