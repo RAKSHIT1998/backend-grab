@@ -51,10 +51,15 @@ const orderSchema = new Schema({
     enum: ['In Progress', 'Prepared', 'Delivered'], 
     default: 'In Progress' 
   },
-  paymentStatus: { 
-    type: String, 
-    enum: ['Pending', 'Paid'], 
-    default: 'Pending' 
+  paymentStatus: {
+    type: String,
+    enum: ['Pending', 'Paid'],
+    default: 'Pending'
+  },
+  // Track whether the restaurant payout has been processed
+  isPayoutDone: {
+    type: Boolean,
+    default: false,
   },
   orderDate: { type: Date, default: Date.now },
   // User details stored at time of order (for email purposes)
