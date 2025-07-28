@@ -10,6 +10,16 @@ import bcrypt from 'bcryptjs';
 export const registerUser = asyncHandler(async (req, res) => {
   const { name, email, phone, password, role } = req.body;
 
+  if (!name) {
+    res.status(400);
+    throw new Error('Name is required');
+  }
+
+  if (!phone) {
+    res.status(400);
+    throw new Error('Phone is required');
+  }
+
   const userExists = await User.findOne({ $or: [{ email }, { phone }] });
   if (userExists) {
     res.status(400);
