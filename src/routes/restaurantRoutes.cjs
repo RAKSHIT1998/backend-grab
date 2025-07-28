@@ -2,8 +2,22 @@
 const express = require("express");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const Restaurant = require("../models/restaurantModel");
-const Promotion = require("../models/promotionModel.js");
+let Restaurant;
+async function getRestaurantModel() {
+  if (!Restaurant) {
+    const mod = await import("../models/restaurantModel.js");
+    Restaurant = mod.default;
+  }
+  return Restaurant;
+}
+let Promotion;
+async function getPromotionModel() {
+  if (!Promotion) {
+    const mod = await import("../models/promotionModel.js");
+    Promotion = mod.default;
+  }
+  return Promotion;
+}
 const { roles } = require("../utils/constant.cjs");
 const auth = require("../middleware/auth.cjs");
 const { v4: uuidv4 } = require("uuid");
@@ -14,6 +28,7 @@ const secret = "#479@/^5149*@123";
 // Register restaurant
 restaurantRouter.post("/register", async (req, res) => {
   try {
+    const Restaurant = await getRestaurantModel();
     const { email, phone, password, name, location } = req.body;
     const existing = await Restaurant.findOne({ email });
     if (existing) return res.status(400).json({ message: "Restaurant already exists" });
@@ -41,6 +56,7 @@ restaurantRouter.post("/register", async (req, res) => {
 // Login
 restaurantRouter.post("/login", async (req, res) => {
   try {
+    const Restaurant = await getRestaurantModel();
     const { email, password } = req.body;
     const restaurant = await Restaurant.findOne({ email });
     if (!restaurant) return res.status(404).json({ message: "Restaurant not found" });
@@ -60,6 +76,7 @@ restaurantRouter.post("/login", async (req, res) => {
 // Get all restaurants (admin)
 restaurantRouter.get("/", async (req, res) => {
   try {
+    const Restaurant = await getRestaurantModel();
     const restaurants = await Restaurant.find();
     res.json(restaurants);
   } catch (err) {
@@ -70,6 +87,7 @@ restaurantRouter.get("/", async (req, res) => {
 // Approve restaurant (admin)
 restaurantRouter.patch("/approve/:id", async (req, res) => {
   try {
+    const Restaurant = await getRestaurantModel();
     const restaurant = await Restaurant.findById(req.params.id);
     if (!restaurant) return res.status(404).json({ message: "Not found" });
     restaurant.approved = true;
@@ -83,6 +101,7 @@ restaurantRouter.patch("/approve/:id", async (req, res) => {
 // Toggle restaurant activity (admin)
 restaurantRouter.patch("/toggle/:id", async (req, res) => {
   try {
+    const Restaurant = await getRestaurantModel();
     const restaurant = await Restaurant.findById(req.params.id);
     if (!restaurant) return res.status(404).json({ message: "Not found" });
     restaurant.active = !restaurant.active;
@@ -96,6 +115,7 @@ restaurantRouter.patch("/toggle/:id", async (req, res) => {
 // Delete restaurant (admin)
 restaurantRouter.delete("/:id", async (req, res) => {
   try {
+    const Restaurant = await getRestaurantModel();
     await Restaurant.findByIdAndDelete(req.params.id);
     res.json({ message: "Deleted successfully" });
   } catch (err) {
@@ -106,6 +126,7 @@ restaurantRouter.delete("/:id", async (req, res) => {
 // Get restaurant profile
 restaurantRouter.get('/profile/:id', async (req, res) => {
   try {
+    const Restaurant = await getRestaurantModel();
     const restaurant = await Restaurant.findById(req.params.id);
     if (!restaurant) return res.status(404).json({ message: 'Not found' });
     res.json(restaurant);
@@ -117,6 +138,7 @@ restaurantRouter.get('/profile/:id', async (req, res) => {
 // Update restaurant profile (bank details, license etc.)
 restaurantRouter.put('/profile/:id', async (req, res) => {
   try {
+    const Restaurant = await getRestaurantModel();
     const update = {
       fssaiLicense: req.body.fssaiLicense,
       bankDetails: req.body.bankDetails,
@@ -135,7 +157,7 @@ restaurantRouter.put('/profile/:id', async (req, res) => {
 // Restaurant analytics (basic)
 restaurantRouter.get('/:id/analytics', async (req, res) => {
   try {
-    const Order = require('../models/orderModel');
+    const { default: Order } = await import("../models/orderModel.js");
     const orders = await Order.find({ restaurantId: req.params.id });
     const totalEarnings = orders.reduce((sum, o) => sum + o.totalAmount, 0);
     res.json({ totalOrders: orders.length, totalEarnings });
@@ -147,7 +169,7 @@ restaurantRouter.get('/:id/analytics', async (req, res) => {
 // Payout info for last week (Mon-Sun)
 restaurantRouter.get('/:id/payouts', async (req, res) => {
   try {
-    const Order = require('../models/orderModel');
+    const { default: Order } = await import("../models/orderModel.js");
     const now = new Date();
     const day = now.getDay();
     const tuesday = new Date(now);
@@ -168,6 +190,7 @@ restaurantRouter.get('/:id/payouts', async (req, res) => {
 // Create promotion
 restaurantRouter.post('/:id/promotions', async (req, res) => {
   try {
+    const Promotion = await getPromotionModel();
     const promo = await Promotion.create({
       restaurantId: req.params.id,
       title: req.body.title,
