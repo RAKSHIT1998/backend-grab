@@ -68,3 +68,14 @@ POST /api/auth/register
 
 Set `type` to `user`, `driver`, `rider` or `restaurant` and include the relevant fields. The response returns a JWT token and the created record.
 
+## Admin Dashboard
+
+Admins can authenticate using the `/api/admin/login` endpoint. By default the credentials are taken from the `ADMIN_EMAIL` and `ADMIN_PASSWORD` environment variables. Example values are:
+
+```
+ADMIN_EMAIL=rakshitbargotra@gmail.com
+ADMIN_PASSWORD=Rakshit@9858
+```
+
+After logging in, include the returned token as a Bearer token for all other admin routes. The dashboard statistics are available at `/api/admin/dashboard` and payouts can be managed via `/api/admin/payouts` and `/api/admin/payouts/run`.
+

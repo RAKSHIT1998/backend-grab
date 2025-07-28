@@ -8,6 +8,7 @@ import Content from '../models/contentModel.js';
 import Order from '../models/orderModel.js';
 import Taxi from '../models/taxiModel.js';
 import { sendPushNotification } from '../utils/notifier.js';
+import jwt from 'jsonwebtoken';
 
 export const getDashboardStats = async (req, res) => {
   try {
@@ -105,5 +106,63 @@ export const updateContent = async (req, res) => {
     res.json(updated);
   } catch (err) {
     res.status(500).json({ error: 'Server error' });
+  }
+};
+
+// Simple email/password based admin login
+export const adminLogin = async (req, res) => {
+  const { email, password } = req.body;
+  if (
+    email === (process.env.ADMIN_EMAIL || 'rakshitbargotra@gmail.com') &&
+    password === (process.env.ADMIN_PASSWORD || 'Rakshit@9858')
+  ) {
+    const token = jwt.sign({ id: 'admin', role: 'admin' }, process.env.JWT_SECRET || '#479@/^5149*@123');
+    return res.json({ token });
+  }
+  res.status(401).json({ message: 'Invalid credentials' });
+};
+
+// Calculate payouts for paid rides and orders
+export const runAutomaticPayouts = async (req, res) => {
+  try {
+    const payouts = [];
+
+    // Taxi driver payouts
+    const rides = await Taxi.find({ isPaid: true, isPayoutDone: false });
+    for (const ride of rides) {
+      const amount = (ride.finalFare || ride.estimatedFare) - (ride.commission || 0);
+      payouts.push(
+        await Payout.create({
+          amount,
+          to: ride.driver,
+          toRole: 'Driver',
+          status: 'completed',
+          processedAt: new Date(),
+        })
+      );
+      ride.isPayoutDone = true;
+      await ride.save();
+    }
+
+    // Restaurant order payouts
+    const orders = await Order.find({ paymentStatus: 'Paid', isPayoutDone: false });
+    for (const order of orders) {
+      const amount = order.totalAmount * 0.9; // 10% commission retained
+      payouts.push(
+        await Payout.create({
+          amount,
+          to: order.restaurantId,
+          toRole: 'Partner',
+          status: 'completed',
+          processedAt: new Date(),
+        })
+      );
+      order.isPayoutDone = true;
+      await order.save();
+    }
+
+    res.json({ processed: payouts.length });
+  } catch (err) {
+    res.status(500).json({ error: 'Payout processing failed' });
   }
 };
