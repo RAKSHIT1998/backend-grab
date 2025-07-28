@@ -7,7 +7,14 @@ const bcrypt = require("bcryptjs");
 const nodemailer = require("nodemailer");
 const crypto = require("crypto");
 const key = "#479@/^5149*@123";
-const userModel = require("../models/userModel");
+let userModel;
+async function getUserModel() {
+  if (!userModel) {
+    const mod = await import("../models/userModel.js");
+    userModel = mod.default;
+  }
+  return userModel;
+}
 const auth = require("../middleware/auth.cjs");
 const { roles } = require("../utils/constant.cjs");
 
@@ -52,13 +59,14 @@ const verifyEmailExists = async (email) => {
 userRouter.post("/register", async (req, res) => {
   const { email, password, phone, userName, role } = req.body;
   try {
+    const User = await getUserModel();
     if (!validator.isEmail(email)) return res.status(400).json({ message: "Invalid email" });
     if (!validateEmailDomain(email)) return res.status(400).json({ message: "Unsupported email domain" });
     if (password.length < 6 || !/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&]{6,}$/.test(password))
       return res.status(400).json({ message: "Weak password" });
     if (!/^[6-9]\d{9}$/.test(phone)) return res.status(400).json({ message: "Invalid Indian phone" });
 
-    const existing = await userModel.findOne({ email });
+    const existing = await User.findOne({ email });
     if (existing) return res.status(400).json({ message: "User exists" });
 
     const emailCheck = await verifyEmailExists(email);
@@ -84,7 +92,8 @@ userRouter.post("/verify-email", async (req, res) => {
 
   const { password, phone, userName, role } = stored.userData;
   const hashed = await bcrypt.hash(password, 8);
-  const user = await userModel.create({
+  const User = await getUserModel();
+  const user = await User.create({
     email,
     password: hashed,
     phone,
@@ -98,7 +107,8 @@ userRouter.post("/verify-email", async (req, res) => {
 
 userRouter.post("/login", async (req, res) => {
   const { email, password } = req.body;
-  const user = await userModel.findOne({ email });
+  const User = await getUserModel();
+  const user = await User.findOne({ email });
   if (!user || !user.activity) return res.status(403).json({ message: "Inactive or not found" });
   const match = await bcrypt.compare(password, user.password);
   if (!match) return res.status(400).json({ message: "Wrong credentials" });
@@ -107,19 +117,22 @@ userRouter.post("/login", async (req, res) => {
 });
 
 userRouter.get("/all", async (req, res) => {
-  const users = await userModel.find({});
+  const User = await getUserModel();
+  const users = await User.find({});
   res.status(200).json(users);
 });
 
 userRouter.patch("/update-role/:id", async (req, res) => {
+  const User = await getUserModel();
   const { id } = req.params;
   const { role } = req.body;
-  await userModel.findByIdAndUpdate(id, { role });
+  await User.findByIdAndUpdate(id, { role });
   res.status(200).json({ message: `Role updated to ${role}` });
 });
 
 userRouter.patch("/toggle-activity/:id", async (req, res) => {
-  const user = await userModel.findById(req.params.id);
+  const User = await getUserModel();
+  const user = await User.findById(req.params.id);
   user.activity = !user.activity;
   await user.save();
   res.status(200).json({ message: `User ${user.activity ? "Enabled" : "Disabled"}` });

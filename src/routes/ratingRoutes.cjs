@@ -1,8 +1,22 @@
 
 const { Router } = require("express");
 const auth = require("../middleware/auth.cjs");
-const ratingModel = require("../models/ratingModel");
-const menuModel = require("../models/menuModel");
+let ratingModel;
+async function getRatingModel() {
+  if (!ratingModel) {
+    const mod = await import("../models/ratingModel.js");
+    ratingModel = mod.default || mod;
+  }
+  return ratingModel;
+}
+let menuModel;
+async function getMenuModel() {
+  if (!menuModel) {
+    const mod = await import("../models/menuModel.js");
+    menuModel = mod.default || mod;
+  }
+  return menuModel;
+}
 const ratingRouter = Router();
 
 ratingRouter.use(auth);
@@ -10,10 +24,11 @@ ratingRouter.use(auth);
 // GET - Fetch all ratings for a specific menu item
 ratingRouter.get("/:itemId", async (req, res) => {
   try {
+    const Rating = await getRatingModel();
     const { itemId } = req.params;
     const userId = req.user._id
-    const ratings = await ratingModel.find({ itemId });
-    const userRating = await ratingModel.findOne({ itemId, userId });
+    const ratings = await Rating.find({ itemId });
+    const userRating = await Rating.findOne({ itemId, userId });
 
     
     if (ratings.length === 0) {
@@ -39,15 +54,17 @@ ratingRouter.get("/:itemId", async (req, res) => {
 ratingRouter.post("/", async (req, res) => {
   const { itemId, rating } = req.body;
   const userId = req.user._id;
-  
+
   try {
+    const Rating = await getRatingModel();
+    const Menu = await getMenuModel();
     // Validate rating
     if (!rating || rating < 1 || rating > 5) {
       return res.status(400).json({ message: "Rating must be between 1 and 5" });
     }
 
     // Check if menu item exists
-    const menuItem = await menuModel.findById(itemId);
+    const menuItem = await Menu.findById(itemId);
     if (!menuItem) {
       return res.status(404).json({ message: "Menu item not found" });
     }
@@ -55,14 +72,14 @@ ratingRouter.post("/", async (req, res) => {
     
 
     // Check if this session/IP already rated this item
-    let existingRating = await ratingModel.findOne({ itemId, userId });
+    let existingRating = await Rating.findOne({ itemId, userId });
     if (existingRating) {
       // Update existing rating
       existingRating.rating = rating;
       await existingRating.save();
     } else {
       // Create new rating
-      await ratingModel.create({
+      await Rating.create({
         itemId,
         userId,
         rating,
@@ -70,12 +87,12 @@ ratingRouter.post("/", async (req, res) => {
     }
 
     // Recalculate average rating for the menu item
-    const allRatings = await ratingModel.find({ itemId });
+    const allRatings = await Rating.find({ itemId });
     const totalRatings = allRatings.length;
     const averageRating = totalRatings > 0 ? allRatings.reduce((sum, r) => sum + r.rating, 0) / totalRatings : 0;
 
     // Update menu item with new average
-    const updatedMenuItem = await menuModel.findByIdAndUpdate(
+    const updatedMenuItem = await Menu.findByIdAndUpdate(
       itemId,
       { 
         averageRating: Math.round(averageRating * 10) / 10,
@@ -108,14 +125,16 @@ ratingRouter.post("/", async (req, res) => {
 // GET - Get average rating for multiple items (for menu display)
 ratingRouter.get("/", async (req, res) => {
   try {
+    const Rating = await getRatingModel();
+    const Menu = await getMenuModel();
     const userId = req.user._id;
-    const menuItems = await menuModel.find({}, { 
-      _id: 1, 
-      itemName: 1, 
-      averageRating: 1, 
-      totalRatings: 1 
+    const menuItems = await Menu.find({}, {
+      _id: 1,
+      itemName: 1,
+      averageRating: 1,
+      totalRatings: 1
     });
-     const userRatings = await ratingModel.find({ userId });
+     const userRatings = await Rating.find({ userId });
     const userRatingsMap = {};
     userRatings.forEach(rating => {
       userRatingsMap[rating.itemId.toString()] = rating.rating;
