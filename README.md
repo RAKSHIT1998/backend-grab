@@ -47,3 +47,24 @@ POST /api/users/register
 ```
 
 If any required field is missing the API responds with status `400` and a descriptive error message.
+
+## Unified Authentication
+
+Use `/api/auth/register` and `/api/auth/login` to handle accounts for users, drivers, riders and restaurants.
+
+### Register Example
+```http
+POST /api/auth/register
+{
+  "type": "driver",
+  "name": "Jane",
+  "phone": "9000000000",
+  "password": "secret",
+  "vehicleType": "taxi",
+  "vehicleNumber": "AB12CD3456",
+  "licenseNumber": "DL1234567"
+}
+```
+
+Set `type` to `user`, `driver`, `rider` or `restaurant` and include the relevant fields. The response returns a JWT token and the created record.
+
