@@ -11,6 +11,7 @@ import listEndpoints from 'express-list-endpoints';
 import { initSocketServer } from './src/socket/socket.js';
 import connectDB from './src/configs/mongoose.js';
 import errorHandler from './src/middleware/errorMiddleware.js';
+import crypto from 'crypto';
 
 // Load environment variables
 dotenv.config();
@@ -32,6 +33,39 @@ if (process.env.NODE_ENV !== 'test') {
 }
 app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 1000 }));
 app.use('/uploads', express.static('uploads'));
+
+// In-memory store for simple Postman integration tests
+const integrationTokens = new Map();
+
+// POST /register - register a name and return a token
+app.post('/register', (req, res) => {
+  const { name } = req.body;
+  if (!name) {
+    return res.status(400).json({ error: 'Name is required' });
+  }
+  const token = crypto.randomBytes(16).toString('hex');
+  integrationTokens.set(token, name);
+  res.json({ token });
+});
+
+// GET /my-name - return the name associated with a token
+app.get('/my-name', (req, res) => {
+  const { token } = req.query;
+  if (!token || !integrationTokens.has(token)) {
+    return res.status(401).json({ error: 'Invalid token' });
+  }
+  res.json({ name: integrationTokens.get(token) });
+});
+
+// POST /unregister - remove the token
+app.post('/unregister', (req, res) => {
+  const { token } = req.body;
+  if (!token || !integrationTokens.has(token)) {
+    return res.status(400).json({ error: 'Invalid token' });
+  }
+  integrationTokens.delete(token);
+  res.sendStatus(200);
+});
 
 // Connect to MongoDB
 const MONGO_URI =
