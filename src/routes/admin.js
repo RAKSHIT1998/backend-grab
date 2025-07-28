@@ -1,7 +1,7 @@
 import express from 'express';
 const router = express.Router();
 import Restaurant from '../models/restaurant.js';
-import User from '../models/User.js';
+import User from '../models/userModel.js';
 import Order from '../models/Order.js';
 import Ride from '../models/Ride.js';
 
