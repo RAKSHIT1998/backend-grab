@@ -17,7 +17,7 @@ router.post('/verify-restaurant/:id', async (req, res) => {
   res.json(r);
 });
 router.post('/verify-driver/:id', async (req, res) => {
-  const Driver = (await import('../models/Driver.js')).default;
+  const Driver = (await import('../models/driverModel.js')).default;
   const d = await Driver.findByIdAndUpdate(req.params.id, { verified: true }, { new: true });
   res.json(d);
 });
