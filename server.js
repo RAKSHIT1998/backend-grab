@@ -7,6 +7,7 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import compression from 'compression';
 import rateLimit from 'express-rate-limit';
+import listEndpoints from 'express-list-endpoints';
 import { initSocketServer } from './src/socket/socket.js';
 import connectDB from './src/configs/mongoose.js';
 import errorHandler from './src/middleware/errorMiddleware.js';
@@ -103,10 +104,15 @@ app.use('/api/admin-portal', adminPortalRouter);
 app.use('/api/history', historyRouter);
 app.use('/api/support', supportRouter);
 
+// Endpoint to list all available API routes
+app.get('/api', (req, res) => {
+  res.json(listEndpoints(app));
+});
+
 // Root health check route
 app.get('/', (req, res) => {
   res.send(
-    '🚀 Grab SuperApp API is running. Available endpoints start with /api/'
+    '🚀 Grab SuperApp API is running. Visit /api for a list of available endpoints.'
   );
 });
 
