@@ -1,6 +1,13 @@
 // src/routes/porterRoutes.js
 const express = require("express");
-const Porter = require("../models/porterModel");
+let Porter;
+async function getPorterModel() {
+  if (!Porter) {
+    const mod = await import("../models/porterModel.js");
+    Porter = mod.default;
+  }
+  return Porter;
+}
 const auth = require("../middleware/auth.cjs");
 const { v4: uuidv4 } = require("uuid");
 
@@ -9,6 +16,7 @@ const porterRouter = express.Router();
 // Create new porter order
 porterRouter.post("/", auth, async (req, res) => {
   try {
+    const Porter = await getPorterModel();
     const {
       pickupLocation,
       dropLocation,
@@ -42,6 +50,7 @@ porterRouter.post("/", auth, async (req, res) => {
 // Get all porter orders (admin)
 porterRouter.get("/all", async (req, res) => {
   try {
+    const Porter = await getPorterModel();
     const orders = await Porter.find().populate("user");
     res.json(orders);
   } catch (err) {
@@ -52,6 +61,7 @@ porterRouter.get("/all", async (req, res) => {
 // Get user-specific orders
 porterRouter.get("/my-orders", auth, async (req, res) => {
   try {
+    const Porter = await getPorterModel();
     const myOrders = await Porter.find({ user: req.user.id });
     res.json(myOrders);
   } catch (err) {
@@ -62,6 +72,7 @@ porterRouter.get("/my-orders", auth, async (req, res) => {
 // Update porter order status
 porterRouter.patch("/status/:id", auth, async (req, res) => {
   try {
+    const Porter = await getPorterModel();
     const updated = await Porter.findByIdAndUpdate(
       req.params.id,
       { status: req.body.status },
@@ -77,6 +88,7 @@ porterRouter.patch("/status/:id", auth, async (req, res) => {
 // Delete porter order
 porterRouter.delete("/:id", auth, async (req, res) => {
   try {
+    const Porter = await getPorterModel();
     const deleted = await Porter.findByIdAndDelete(req.params.id);
     if (!deleted) return res.status(404).json({ message: "Order not found" });
     res.json({ message: "Order deleted" });
