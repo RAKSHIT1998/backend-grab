@@ -79,3 +79,16 @@ ADMIN_PASSWORD=Rakshit@9858
 
 After logging in, include the returned token as a Bearer token for all other admin routes. The dashboard statistics are available at `/api/admin/dashboard` and payouts can be managed via `/api/admin/payouts` and `/api/admin/payouts/run`.
 
+
+## Frontend Demo
+
+The backend serves a small static frontend under the `/app` path. The landing page `/app/` lists each module with Grab-inspired styling. Available sections include:
+
+- `/app/userapp/` – user registration
+- `/app/driverapp/` – driver registration
+- `/app/riderapp/` – rider registration
+- `/app/restaurantapp/` – restaurant registration
+- `/app/martapp/` – mart placeholder
+- `/app/medicineapp/` – medicine store placeholder
+
+All pages share `frontend/style.css`, which uses Grab's green color palette. Forms submit via JavaScript `fetch` requests to the backend API so you can test registrations directly.
