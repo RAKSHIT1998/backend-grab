@@ -33,6 +33,8 @@ if (process.env.NODE_ENV !== 'test') {
 }
 app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 1000 }));
 app.use('/uploads', express.static('uploads'));
+// Serve static frontend
+app.use('/app', express.static('frontend'));
 
 // In-memory store for simple Postman integration tests
 const integrationTokens = new Map();
