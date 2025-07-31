@@ -112,6 +112,8 @@ import historyRouter from './src/routes/historyRoutes.js';
 import supportRouter from './src/routes/supportRoutes.js';
 import refundRouter from './src/routes/refundRoutes.js';
 import bidRouter from './src/routes/bidRoutes.js';
+import bikerAppRouter from './src/routes/bikerAppRoutes.js';
+import partnerAppRouter from './src/routes/partnerAppRoutes.js';
 
 // Mount API routes
 app.use('/api/users', userRouter);
@@ -121,6 +123,8 @@ app.use('/api/mart', martRouter);
 app.use('/api/porter', porterRouter);
 app.use('/api/medicine', medicineRouter);
 app.use('/api/bike', bikeRouter);
+app.use('/api/biker', bikerAppRouter);
+app.use('/api/partner', partnerAppRouter);
 app.use('/api/taxi', taxiRouter);
 app.use('/api/admin/taxi', adminTaxiRoutes);
 app.use('/api/wallet', walletRouter);
