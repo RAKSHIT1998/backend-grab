@@ -6,6 +6,7 @@ import {
   createFoodBikeDelivery,
   createMartBikeDelivery,
   createPorterBikeDelivery,
+  createMedicineBikeDelivery,
   updateBikeLocation,
 } from '../controllers/bikeController.js';
 
@@ -24,6 +25,9 @@ router.post('/bike-delivery/mart', protectUser, createMartBikeDelivery);
 
 // Porter Delivery
 router.post('/bike-delivery/porter', protectUser, createPorterBikeDelivery);
+
+// Medicine Delivery
+router.post('/bike-delivery/medicine', protectUser, createMedicineBikeDelivery);
 
 // Update live location for bike drivers
 router.put('/location', protectDriver, updateBikeLocation);

@@ -319,6 +319,11 @@ orderRouter.post("/", async (req, res) => {
       ]);
       // Notify restaurant app about the new order
       req.io.of('/restaurant').emit('newOrder', order);
+      req.io.of('/driver').emit('food-delivery-request', {
+        orderId: order._id,
+        restaurantId,
+        userId,
+      });
       req.io.emit("cartCleared", { userId, action: "order_placed" });
   
       return res.status(201).json({

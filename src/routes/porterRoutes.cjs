@@ -10,6 +10,14 @@ async function getPorterModel() {
 }
 const auth = require("../middleware/auth.cjs");
 const { v4: uuidv4 } = require("uuid");
+let getIO;
+async function loadSocket() {
+  if (!getIO) {
+    const mod = await import("../socket/socket.js");
+    getIO = mod.getIO;
+  }
+  return getIO();
+}
 
 const porterRouter = express.Router();
 
@@ -39,6 +47,20 @@ porterRouter.post("/", auth, async (req, res) => {
       instructions,
       status: "Pending",
     });
+
+    const io = await loadSocket();
+    if (io) {
+      io.of("/driver").emit("porter-request", {
+        orderId: newOrder.orderId,
+        userId: req.user.id,
+        pickupLocation,
+        dropLocation,
+        goodsType,
+        weight,
+        dimensions,
+        contactNumber,
+      });
+    }
 
     res.status(201).json({ message: "Porter order created", order: newOrder });
   } catch (err) {

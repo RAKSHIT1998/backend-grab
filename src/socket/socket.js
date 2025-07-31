@@ -92,4 +92,5 @@ const initSocketServer = (httpServer) => {
   return io;
 };
 
-export { initSocketServer };
+export const getIO = () => io;
+export { initSocketServer, getIO };

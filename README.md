@@ -32,6 +32,20 @@ Drivers and customers can share their real-time location while an order or ride 
 
 WebSocket events `driver-location`, `bike-location` and the new `user-location` broadcast updates so both sides can track progress in the app.
 
+## App APIs
+
+The backend exposes dedicated routes for each module:
+
+- **Driver App:** `/api/drivers` for driver registration, login and profile management.
+- **Rider App:** `/api/bike` handles bike taxi rides and deliveries.
+- **Restaurant App:** `/api/restaurants` manages menus and order status updates.
+- **Porter App:** `/api/porter` allows customers to book porter deliveries.
+- **Medicine App:** `/api/medicine` handles pharmacy orders.
+
+Customers can request a cab using `/api/taxi`. After a ride is created the server emits a `taxi-request` event on the `/driver` socket namespace so available drivers know that a passenger is waiting. The same pattern is used for other services:
+- `/api/bike` emits `bike-taxi-request`, `food-delivery-request`, `mart-delivery-request` and `porter-request` depending on the booking type.
+- `/api/medicine` emits `medicine-delivery-request` when a pharmacy order is placed.
+
 ## User Registration
 
 Create a new account using the `/api/users/register` endpoint. The request body must include `name`, `phone` and `password`. A valid email can also be provided but is optional.
