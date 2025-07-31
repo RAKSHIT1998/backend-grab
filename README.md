@@ -97,6 +97,16 @@ After logging in, include the returned token as a Bearer token for all other adm
 
 Users can request a refund if an order is cancelled or an issue occurs. Submit a POST request to `/api/refunds` with the order ID and amount. Check request status at `/api/refunds/my`. Admins can process pending refunds via `/api/refunds/run` or wait for the hourly refund scheduler.
 
+## Ride Bidding
+
+Drivers can place bids on open ride requests and users may accept the bid they prefer.
+
+- **POST `/api/bids/create`** – driver submits a bid for a ride. Requires `rideId` and `amount` in the body.
+- **POST `/api/bids/accept`** – user accepts a bid by ID. The ride is assigned to the bidding driver.
+- **GET `/api/bids/status/:rideId`** – fetch current bids for a ride.
+
+Socket events `driver-bid` and `bid-accepted` keep both parties updated in real time.
+
 
 ## Frontend Demo
 
