@@ -111,6 +111,7 @@ import adminPortalRouter from './src/routes/admin.js';
 import historyRouter from './src/routes/historyRoutes.js';
 import supportRouter from './src/routes/supportRoutes.js';
 import refundRouter from './src/routes/refundRoutes.js';
+import bidRouter from './src/routes/bidRoutes.js';
 
 // Mount API routes
 app.use('/api/users', userRouter);
@@ -146,6 +147,7 @@ app.use('/api/admin-portal', adminPortalRouter);
 app.use('/api/history', historyRouter);
 app.use('/api/support', supportRouter);
 app.use('/api/refunds', refundRouter);
+app.use('/api/bids', bidRouter);
 
 // Endpoint to list all available API routes
 app.get('/api', (req, res) => {
