@@ -120,3 +120,82 @@ The backend serves a small static frontend under the `/app` path. The landing pa
 - `/app/medicineapp/` – medicine store placeholder
 
 All pages share `frontend/style.css`, which uses Grab's green color palette. Forms submit via JavaScript `fetch` requests to the backend API so you can test registrations directly.
+## Biker App API
+
+All biker-related endpoints are accessed using the base URL `https://backend-grab.onrender.com`. The routes require authentication unless noted.
+
+### Auth & Profile
+- `POST /api/biker/register`
+- `POST /api/biker/login`
+- `GET /api/biker/profile`
+- `PUT /api/biker/profile/update`
+- `POST /api/biker/kyc`
+
+### Availability
+- `POST /api/biker/availability`
+
+### Order/Delivery
+- `GET /api/biker/orders/assigned`
+- `POST /api/biker/orders/accept`
+- `POST /api/biker/orders/reject`
+- `GET /api/biker/orders/:orderId`
+- `POST /api/biker/orders/:orderId/status`
+- `POST /api/biker/orders/:orderId/complete`
+
+### Earnings & Wallet
+- `GET /api/biker/wallet`
+- `GET /api/biker/orders/completed`
+- `POST /api/biker/payout/request`
+
+### Notifications & Ratings
+- `GET /api/biker/notifications`
+- `GET /api/biker/ratings`
+- `POST /api/biker/ratings/feedback`
+
+### Socket.IO Namespaces/Events
+- `/biker` namespace for live events
+- `biker:newOrder`
+- `biker:updateLocation`
+- `biker:orderStatusUpdate`
+
+## Partner App API
+
+Endpoints for restaurant, mart, or medicine partners also use the same base URL `https://backend-grab.onrender.com`.
+
+### Auth & Profile
+- `POST /api/partner/register`
+- `POST /api/partner/login`
+- `GET /api/partner/profile`
+- `PUT /api/partner/profile/update`
+- `POST /api/partner/kyc`
+
+### Outlet/Menu/Inventory
+- `POST /api/partner/availability`
+- `GET /api/partner/menu`
+- `POST /api/partner/menu/add`
+- `PUT /api/partner/menu/edit/:itemId`
+- `DELETE /api/partner/menu/delete/:itemId`
+
+### Order Management
+- `GET /api/partner/orders/active`
+- `POST /api/partner/orders/accept`
+- `POST /api/partner/orders/reject`
+- `GET /api/partner/orders/:orderId`
+- `POST /api/partner/orders/:orderId/status`
+- `POST /api/partner/orders/:orderId/assign`
+- `GET /api/partner/orders/history`
+
+### Earnings & Wallet
+- `GET /api/partner/wallet`
+- `POST /api/partner/payout/request`
+
+### Notifications & Ratings
+- `GET /api/partner/notifications`
+- `GET /api/partner/ratings`
+- `POST /api/partner/ratings/reply`
+
+### Socket.IO Namespaces/Events
+- `/partner` namespace for live events
+- `partner:newOrder`
+- `partner:orderStatusUpdate`
+- `partner:assignRider`
