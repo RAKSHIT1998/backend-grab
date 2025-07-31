@@ -93,6 +93,10 @@ ADMIN_PASSWORD=Rakshit@9858
 
 After logging in, include the returned token as a Bearer token for all other admin routes. The dashboard statistics are available at `/api/admin/dashboard` and payouts can be managed via `/api/admin/payouts` and `/api/admin/payouts/run`.
 
+## Refund Requests
+
+Users can request a refund if an order is cancelled or an issue occurs. Submit a POST request to `/api/refunds` with the order ID and amount. Check request status at `/api/refunds/my`. Admins can process pending refunds via `/api/refunds/run` or wait for the hourly refund scheduler.
+
 
 ## Frontend Demo
 
