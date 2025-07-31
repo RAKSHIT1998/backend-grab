@@ -52,6 +52,7 @@ const partnerSchema = new mongoose.Schema(
         user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
         stars: { type: Number, required: true },
         comment: { type: String },
+        reply: { type: String },
         createdAt: { type: Date, default: Date.now },
       },
     ],

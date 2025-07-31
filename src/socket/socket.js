@@ -74,6 +74,31 @@ const initSocketServer = (httpServer) => {
     });
   });
 
+  // BIKER namespace
+  const bikerNamespace = io.of("/biker");
+  bikerNamespace.use(authMiddleware);
+  bikerNamespace.on("connection", (socket) => {
+    console.log("Biker connected:", socket.user.id);
+
+    socket.on("biker:updateLocation", (location) => {
+      bikerNamespace.emit("biker:updateLocation", {
+        bikerId: socket.user.id,
+        location,
+      });
+    });
+
+    socket.on("biker:orderStatusUpdate", (update) => {
+      bikerNamespace.emit("biker:orderStatusUpdate", {
+        bikerId: socket.user.id,
+        ...update,
+      });
+    });
+
+    socket.on("disconnect", () => {
+      console.log("Biker disconnected:", socket.user.id);
+    });
+  });
+
   // RESTAURANT namespace
   const restaurantNamespace = io.of("/restaurant");
   restaurantNamespace.use(authMiddleware);
@@ -86,6 +111,31 @@ const initSocketServer = (httpServer) => {
 
     socket.on("disconnect", () => {
       console.log("Restaurant disconnected:", socket.user.id);
+    });
+  });
+
+  // PARTNER namespace
+  const partnerNamespace = io.of("/partner");
+  partnerNamespace.use(authMiddleware);
+  partnerNamespace.on("connection", (socket) => {
+    console.log("Partner connected:", socket.user.id);
+
+    socket.on("partner:assignRider", (data) => {
+      partnerNamespace.emit("partner:assignRider", {
+        partnerId: socket.user.id,
+        ...data,
+      });
+    });
+
+    socket.on("partner:orderStatusUpdate", (update) => {
+      partnerNamespace.emit("partner:orderStatusUpdate", {
+        partnerId: socket.user.id,
+        ...update,
+      });
+    });
+
+    socket.on("disconnect", () => {
+      console.log("Partner disconnected:", socket.user.id);
     });
   });
 
