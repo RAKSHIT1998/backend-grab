@@ -4,6 +4,8 @@ import MartProduct from '../models/martModel.js';
 import Order from '../models/Order.js';
 import Wallet from '../models/walletModel.js';
 import Payout from '../models/payoutModel.js';
+import Notification from '../models/notificationModel.js';
+import KYC from '../models/kycModel.js';
 import generateToken from '../utils/generateToken.js';
 
 export const registerPartner = async (req, res) => {
@@ -151,3 +153,91 @@ export const requestPayout = async (req, res) => {
   res.status(201).json(payout);
 };
 
+
+export const submitKyc = async (req, res) => {
+  const { documentType, documentNumber, images } = req.body;
+  let kyc = await KYC.findOne({ owner: req.partner._id, ownerModel: 'Partner' });
+  if (kyc) {
+    kyc.documentType = documentType;
+    kyc.documentNumber = documentNumber;
+    kyc.images = images;
+    kyc.status = 'pending';
+  } else {
+    kyc = await KYC.create({
+      owner: req.partner._id,
+      ownerModel: 'Partner',
+      documentType,
+      documentNumber,
+      images,
+    });
+  }
+  await kyc.save();
+  res.status(201).json(kyc);
+};
+
+export const acceptOrder = async (req, res) => {
+  const { orderId } = req.body;
+  const order = await Order.findById(orderId);
+  if (!order) return res.status(404).json({ message: 'Order not found' });
+  if (order.partner && order.partner.toString() !== req.partner._id.toString()) {
+    return res.status(400).json({ message: 'Already assigned' });
+  }
+  order.partner = req.partner._id;
+  order.status = 'accepted';
+  await order.save();
+  res.json(order);
+};
+
+export const rejectOrder = async (req, res) => {
+  const { orderId } = req.body;
+  const order = await Order.findById(orderId);
+  if (!order) return res.status(404).json({ message: 'Order not found' });
+  order.status = 'rejected';
+  await order.save();
+  res.json(order);
+};
+
+export const getOrder = async (req, res) => {
+  const { orderId } = req.params;
+  const order = await Order.findById(orderId);
+  if (!order) return res.status(404).json({ message: 'Order not found' });
+  if (order.partner && order.partner.toString() !== req.partner._id.toString()) {
+    return res.status(403).json({ message: 'Not your order' });
+  }
+  res.json(order);
+};
+
+export const assignRider = async (req, res) => {
+  const { orderId } = req.params;
+  const { riderId } = req.body;
+  const order = await Order.findById(orderId);
+  if (!order) return res.status(404).json({ message: 'Order not found' });
+  if (order.partner.toString() !== req.partner._id.toString()) {
+    return res.status(403).json({ message: 'Not your order' });
+  }
+  order.riderId = riderId;
+  order.status = 'assigned';
+  await order.save();
+  res.json(order);
+};
+
+export const getNotifications = async (req, res) => {
+  const notifications = await Notification.find({
+    recipient: req.partner._id,
+    recipientModel: 'Partner',
+  }).sort({ createdAt: -1 });
+  res.json(notifications);
+};
+
+export const getRatings = (req, res) => {
+  res.json({ average: req.partner.averageRating, ratings: req.partner.ratings });
+};
+
+export const replyRating = async (req, res) => {
+  const { ratingId, reply } = req.body;
+  const rating = req.partner.ratings.id(ratingId);
+  if (!rating) return res.status(404).json({ message: 'Rating not found' });
+  rating.reply = reply;
+  await req.partner.save();
+  res.json({ message: 'Reply added' });
+};

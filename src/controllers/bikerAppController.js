@@ -2,6 +2,8 @@ import Driver from '../models/driverModel.js';
 import Order from '../models/Order.js';
 import Wallet from '../models/walletModel.js';
 import Payout from '../models/payoutModel.js';
+import Notification from '../models/notificationModel.js';
+import KYC from '../models/kycModel.js';
 import generateToken from '../utils/generateToken.js';
 
 export const registerBiker = async (req, res) => {
@@ -142,3 +144,43 @@ export const requestPayout = async (req, res) => {
   res.status(201).json(payout);
 };
 
+
+export const submitKyc = async (req, res) => {
+  const { documentType, documentNumber, images } = req.body;
+  let kyc = await KYC.findOne({ owner: req.driver._id, ownerModel: 'Driver' });
+  if (kyc) {
+    kyc.documentType = documentType;
+    kyc.documentNumber = documentNumber;
+    kyc.images = images;
+    kyc.status = 'pending';
+  } else {
+    kyc = await KYC.create({
+      owner: req.driver._id,
+      ownerModel: 'Driver',
+      documentType,
+      documentNumber,
+      images,
+    });
+  }
+  await kyc.save();
+  res.status(201).json(kyc);
+};
+
+export const getNotifications = async (req, res) => {
+  const notifications = await Notification.find({
+    recipient: req.driver._id,
+    recipientModel: 'Driver',
+  }).sort({ createdAt: -1 });
+  res.json(notifications);
+};
+
+export const getRatings = (req, res) => {
+  res.json({ average: req.driver.averageRating, ratings: req.driver.ratings });
+};
+
+export const addRatingFeedback = async (req, res) => {
+  const { stars = 0, comment } = req.body;
+  req.driver.ratings.push({ user: req.driver._id, stars, comment });
+  await req.driver.save();
+  res.status(201).json({ message: 'Feedback submitted' });
+};
