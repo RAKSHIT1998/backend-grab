@@ -3,6 +3,14 @@
 const express = require("express");
 const taxiRouter = express.Router();
 const auth = require("../middleware/auth.cjs");
+let getIO;
+async function loadSocket() {
+  if (!getIO) {
+    const mod = await import("../socket/socket.js");
+    getIO = mod.getIO;
+  }
+  return getIO();
+}
 let Taxi;
 async function getTaxiModel() {
   if (!Taxi) {
@@ -35,6 +43,19 @@ taxiRouter.post("/", auth, async (req, res) => {
       phoneNumber,
       status: "Pending",
     });
+
+    // Notify available drivers about the new taxi request
+    const io = await loadSocket();
+    if (io) {
+      io.of("/driver").emit("taxi-request", {
+        rideId: ride.rideId,
+        userId: req.user.id,
+        pickupLocation,
+        dropLocation,
+        rideType,
+        phoneNumber,
+      });
+    }
 
     res.status(201).json({
       message: "Taxi ride created successfully",
