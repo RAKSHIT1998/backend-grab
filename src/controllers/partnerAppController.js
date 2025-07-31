@@ -8,10 +8,29 @@ import generateToken from '../utils/generateToken.js';
 
 export const registerPartner = async (req, res) => {
   try {
-    const { name, phone, email, password, partnerType } = req.body;
+    const {
+      name,
+      phone,
+      email,
+      password,
+      partnerType,
+      fssaiLicense,
+      bankDetails,
+    } = req.body;
+
     const exists = await Partner.findOne({ phone });
     if (exists) return res.status(400).json({ message: 'Partner already exists' });
-    const partner = await Partner.create({ name, phone, email, password, partnerType });
+
+    const partner = await Partner.create({
+      name,
+      phone,
+      email,
+      password,
+      partnerType,
+      fssaiLicense,
+      bankDetails,
+    });
+
     res.status(201).json({ token: generateToken(partner._id), partner });
   } catch (err) {
     res.status(500).json({ message: 'Registration failed' });

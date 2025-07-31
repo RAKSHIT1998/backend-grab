@@ -8,6 +8,7 @@ const menuSchema = new Schema({
   quantity: { type: Number, required: true },
   availability: { type: Boolean, default: true },
   image: { type: String },
+  description: { type: String },
   averageRating: { type: Number, default: 0 },
   totalRatings: { type: Number, default: 0 },
 });
