@@ -24,6 +24,14 @@ const partnerSchema = new mongoose.Schema(
       enum: ['restaurant', 'mart'],
       required: true,
     },
+    fssaiLicense: {
+      type: String,
+    },
+    bankDetails: {
+      accountHolder: String,
+      accountNumber: String,
+      ifsc: String,
+    },
     address: {
       type: String,
     },
