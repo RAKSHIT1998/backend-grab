@@ -92,5 +92,5 @@ const initSocketServer = (httpServer) => {
   return io;
 };
 
-export const getIO = () => io;
+const getIO = () => io;
 export { initSocketServer, getIO };
