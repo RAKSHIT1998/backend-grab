@@ -16,6 +16,18 @@ export const registerDriver = async (req, res) => {
     vehicleNumber,
   } = req.body;
 
+  if (
+    !name ||
+    !email ||
+    !phone ||
+    !password ||
+    !vehicleType ||
+    !vehicleNumber ||
+    !licenseNumber
+  ) {
+    return res.status(400).json({ message: 'Missing required fields' });
+  }
+
   const driverExists = await Driver.findOne({ email });
   if (driverExists) {
     return res.status(400).json({ message: 'Driver already exists' });
