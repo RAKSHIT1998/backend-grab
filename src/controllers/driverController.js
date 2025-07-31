@@ -152,3 +152,44 @@ export const deleteDriver = async (req, res) => {
   await driver.remove();
   res.json({ message: 'Driver deleted' });
 };
+
+// Fetch open taxi requests for drivers
+export const getOpenTaxiRequests = async (req, res) => {
+  try {
+    const { default: Taxi } = await import('../models/taxiModel.js');
+    const requests = await Taxi.find({ status: { $in: ['requested', 'Pending', 'bidding'] } })
+      .select('rideId pickupLocation dropLocation estimatedFare rideType');
+    res.json(requests);
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to fetch requests' });
+  }
+};
+
+// Fetch rides assigned to the logged in driver
+export const getActiveDriverRides = async (req, res) => {
+  try {
+    const { default: Taxi } = await import('../models/taxiModel.js');
+    const rides = await Taxi.find({
+      driver: req.driver._id,
+      status: { $nin: ['completed', 'cancelled'] },
+    });
+    res.json(rides);
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to fetch rides' });
+  }
+};
+
+// Basic earnings analytics for a driver
+export const getDriverAnalytics = async (req, res) => {
+  try {
+    const { default: Taxi } = await import('../models/taxiModel.js');
+    const completed = await Taxi.find({ driver: req.driver._id, status: 'completed' });
+    const totalEarnings = completed.reduce(
+      (sum, r) => sum + ((r.finalFare || r.estimatedFare || 0) - (r.commission || 0)),
+      0,
+    );
+    res.json({ completedRides: completed.length, totalEarnings });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to fetch analytics' });
+  }
+};

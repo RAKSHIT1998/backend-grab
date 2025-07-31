@@ -36,7 +36,7 @@ WebSocket events `driver-location`, `bike-location` and the new `user-location` 
 
 The backend exposes dedicated routes for each module:
 
-- **Driver App:** `/api/drivers` for driver registration, login and profile management.
+- **Driver App:** `/api/drivers` for driver registration, login and profile management. Drivers can fetch open ride requests via `/api/drivers/taxi/requests`, see current assignments at `/api/drivers/taxi/active`, and view earnings analytics at `/api/drivers/analytics`.
 - **Rider App:** `/api/bike` handles bike taxi rides and deliveries.
 - **Restaurant App:** `/api/restaurants` manages menus and order status updates.
 - **Porter App:** `/api/porter` allows customers to book porter deliveries.
