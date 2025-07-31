@@ -12,6 +12,7 @@ import { initSocketServer } from './src/socket/socket.js';
 import connectDB from './src/configs/mongoose.js';
 import errorHandler from './src/middleware/errorMiddleware.js';
 import crypto from 'crypto';
+import { startRefundScheduler } from './src/jobs/refundScheduler.js';
 
 // Load environment variables
 dotenv.config();
@@ -109,6 +110,7 @@ import authRouter from './src/routes/authRoutes.js';
 import adminPortalRouter from './src/routes/admin.js';
 import historyRouter from './src/routes/historyRoutes.js';
 import supportRouter from './src/routes/supportRoutes.js';
+import refundRouter from './src/routes/refundRoutes.js';
 
 // Mount API routes
 app.use('/api/users', userRouter);
@@ -143,6 +145,7 @@ app.use('/api/auth', authRouter);
 app.use('/api/admin-portal', adminPortalRouter);
 app.use('/api/history', historyRouter);
 app.use('/api/support', supportRouter);
+app.use('/api/refunds', refundRouter);
 
 // Endpoint to list all available API routes
 app.get('/api', (req, res) => {
@@ -158,6 +161,9 @@ app.get('/', (req, res) => {
 
 // Global error handler
 app.use(errorHandler);
+
+// Start scheduled refund processing
+startRefundScheduler();
 
 // Start server
 const PORT = process.env.PORT || 5000;
